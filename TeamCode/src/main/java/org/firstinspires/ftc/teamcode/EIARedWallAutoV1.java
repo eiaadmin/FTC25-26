@@ -72,18 +72,18 @@ public class EIARedWallAutoV1 extends OpMode {
     private final Pose startPose = new Pose(87.67, 8.193, Math.toRadians(-90)); // Start Pose of our robot.
     //87.67, 8.193
     private final Pose scorePose = new Pose(83.4, 80.1, Math.toRadians(-135)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
-    //77.22, 74.56
-    private final Pose pickup1Pose = new Pose(81, 30.32,Math.toRadians(0)); // Grab Highest (First Set) of Artifacts from the Spike Mark.
-    //88.49, 29.09
+
+    private final Pose pickup1Pose = new Pose(82.14, 27.86,Math.toRadians(0)); // Grab Highest (First Set) of Artifacts from the Spike Mark.
+    //81, 30.32
     private final Pose pickup1grabPose = new Pose(124.75, 32.16,Math.toRadians(0));
     //123.3, 32.36
     //private final Pose pickup1ControlPose = new Pose(62.88, 17.21, Math.toRadians(0));
     private final Pose pickup2Pose = new Pose(83.4, 80.1, Math.toRadians(-135)); // Score Highest (First Set) of Artifacts from the Spike Mark.
     private final Pose pickup2ControlPose = new Pose(79.48, 45.06, Math.toRadians(-135));
     //private final Pose pickup3Pose = new Pose(131.10, 52.85, Math.toRadians(0)); // Grab Middle (Second Set) of Artifacts from the Spike Mark.
-    private final Pose pickup3Pose = new Pose(80.91, 51.62, Math.toRadians(0)); //89.51, 52.44
+    private final Pose pickup3Pose = new Pose(82.34, 51.4, Math.toRadians(0)); //80.91, 51.62
     //private final Pose pickup3ControlPose = new Pose(34.41, 57.76, Math.toRadians(0));
-    private final Pose pickup3grabPose = new Pose(125.36, 57.35, Math.toRadians(0));
+    private final Pose pickup3grabPose = new Pose(126.38, 53.67, Math.toRadians(0));//125.36, 57.35
     private final Pose pickup4Pose = new Pose(83.4, 80.1, Math.toRadians(-135)); // Score Middle (Second Set) of Artifacts from the Spike Mark.
     private final Pose pickup4ControlPose = new Pose(79.48, 45.06, Math.toRadians(-135));
     //private final Pose pickup5Pose = new Pose(126.59, 84.19, Math.toRadians(0)); // Grab Lowest (Third Set) of Artifacts from the Spike Mark.
@@ -153,17 +153,20 @@ public class EIARedWallAutoV1 extends OpMode {
         rollerIntakeMotor.setPower(INTAKE_POWER_PPG);
         shootrollerServo.setPower(FEED_REVERSE);
 
-        if(pathTimer.getElapsedTimeSeconds() > 4 && pathState==-2){
+        if(pathTimer.getElapsedTimeSeconds() > 3.60 && pathState==-2){
             setPathState(3);
         }
-        if(pathTimer.getElapsedTimeSeconds() > 4 && pathState==-4){
+        if(pathTimer.getElapsedTimeSeconds() > 3.05 && pathState==-4){
             setPathState(6);
         }
-        if(pathTimer.getElapsedTimeSeconds() >3 && pathState==-7){
+        if(pathTimer.getElapsedTimeSeconds() >2.0 && pathState==-7){
             setPathState(9);
         }
     }
     public void enableShooter() {
+
+        //telemetry.addData("test local",PRESET_HIGH_DEG);
+        //telemetry.update();
 
         shootServo.setPosition(degToPos(PRESET_HIGH_DEG));
         // Command target velocity
@@ -187,19 +190,19 @@ public class EIARedWallAutoV1 extends OpMode {
             shootrollerServo.setPower(0.0);
         }
 
-        if(pathTimer.getElapsedTimeSeconds() > 3 && pathState ==-1) {
+        if(pathTimer.getElapsedTimeSeconds() > 3.60 && pathState ==-1) {
             setPathState(2);
             feedEnabled = false;
         }
-        if(pathTimer.getElapsedTimeSeconds() > 3 && pathState ==-3) {
+        if(pathTimer.getElapsedTimeSeconds() > 3.60 && pathState ==-3) {
             setPathState(5);
             feedEnabled = false;
         }
-        if(pathTimer.getElapsedTimeSeconds() > 3 && pathState ==-6) {
+        if(pathTimer.getElapsedTimeSeconds() > 3.60 && pathState ==-6) {
             setPathState(8);
             feedEnabled = false;
         }
-        if(pathTimer.getElapsedTimeSeconds() > 3 && pathState ==-9) {
+        if(pathTimer.getElapsedTimeSeconds() > 3.60 && pathState ==-9) {
             setPathState(11);
             feedEnabled = false;
         }
