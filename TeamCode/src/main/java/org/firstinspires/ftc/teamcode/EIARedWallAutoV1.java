@@ -73,9 +73,9 @@ public class EIARedWallAutoV1 extends OpMode {
     //87.67, 8.193
     private final Pose scorePose = new Pose(83.4, 80.1, Math.toRadians(-135)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
 
-    private final Pose pickup1Pose = new Pose(82.14, 27.86,Math.toRadians(0)); // Grab Highest (First Set) of Artifacts from the Spike Mark.
-    //81, 30.32
-    private final Pose pickup1grabPose = new Pose(124.75, 32.16,Math.toRadians(0));
+    private final Pose pickup1Pose = new Pose(86.65, 26.22,Math.toRadians(0)); // Grab Highest (First Set) of Artifacts from the Spike Mark.
+    //82.14, 27.86
+    private final Pose pickup1grabPose = new Pose(123.7, 27.86,Math.toRadians(0));
     //123.3, 32.36
     //private final Pose pickup1ControlPose = new Pose(62.88, 17.21, Math.toRadians(0));
     private final Pose pickup2Pose = new Pose(83.4, 80.1, Math.toRadians(-135)); // Score Highest (First Set) of Artifacts from the Spike Mark.
@@ -89,7 +89,7 @@ public class EIARedWallAutoV1 extends OpMode {
     //private final Pose pickup5Pose = new Pose(126.59, 84.19, Math.toRadians(0)); // Grab Lowest (Third Set) of Artifacts from the Spike Mark.
     private final Pose pickup5Pose = new Pose(82.75,71.49, Math.toRadians(0));
     private final Pose pickup5grabPose = new Pose(126.79, 80.30, Math.toRadians(0));
-//129.87, 85.21
+    //129.87, 85.21
     private final Pose pickup6Pose = new Pose(83.4, 80.1, Math.toRadians(-135)); // Score Lowest (Third Set) of Artifacts from the Spike Mark.
     private final Pose pickup6ControlPose = new Pose(81, 70, Math.toRadians(-139));
     private final Pose landingPose = new Pose(84, 64, Math.toRadians(-139)); // Landing Pose of our robot. It is facing the goal at a 135 degree angle.
@@ -153,20 +153,18 @@ public class EIARedWallAutoV1 extends OpMode {
         rollerIntakeMotor.setPower(INTAKE_POWER_PPG);
         shootrollerServo.setPower(FEED_REVERSE);
 
-        if(pathTimer.getElapsedTimeSeconds() > 3.60 && pathState==-2){
+        if(pathTimer.getElapsedTimeSeconds() > 3.85 && pathState==-2){
             setPathState(3);
         }
-        if(pathTimer.getElapsedTimeSeconds() > 3.05 && pathState==-4){
+        if(pathTimer.getElapsedTimeSeconds() > 3.10 && pathState==-4){
             setPathState(6);
         }
-        if(pathTimer.getElapsedTimeSeconds() >2.0 && pathState==-7){
+        if(pathTimer.getElapsedTimeSeconds() >2.10 && pathState==-7){
             setPathState(9);
         }
     }
     public void enableShooter() {
 
-        //telemetry.addData("test local",PRESET_HIGH_DEG);
-        //telemetry.update();
 
         shootServo.setPosition(degToPos(PRESET_HIGH_DEG));
         // Command target velocity
@@ -284,6 +282,9 @@ public class EIARedWallAutoV1 extends OpMode {
             case 2:
                 /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
                 if(!follower.isBusy() ) {
+
+                    telemetry.addData("Inside first pickup",PRESET_HIGH_DEG);
+                    telemetry.update();
                     follower.followPath(grabPickup1,true);
                     follower.setMaxPower(0.9);
                     /* Score Preload */

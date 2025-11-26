@@ -92,7 +92,7 @@ public class EIABlueSideAutoV1 extends OpMode {
 //129.87, 85.21
     private final Pose pickup6Pose = new Pose(61.4, 81, Math.toRadians(-45)); // Score Lowest (Third Set) of Artifacts from the Spike Mark.
     private final Pose pickup6ControlPose = new Pose(61.4, 78.2, Math.toRadians(-45));
-    private final Pose landingPose = new Pose(56.53, 67, Math.toRadians(-45)); // Landing Pose of our robot. It is facing the goal at a 135 degree angle.
+    private final Pose landingPose = new Pose(56.53, 64.6, Math.toRadians(-45)); // Landing Pose of our robot. It is facing the goal at a 135 degree angle.
     private Path scorePreload;
     private PathChain grabPickup1, scorePickup1, grabPickup2, scorePickup2, grabPickup3, scorePickup3, landingPath;
 
@@ -153,13 +153,13 @@ public class EIABlueSideAutoV1 extends OpMode {
         rollerIntakeMotor.setPower(INTAKE_POWER_PPG);
         shootrollerServo.setPower(FEED_REVERSE);
 
-        if(pathTimer.getElapsedTimeSeconds() > 4 && pathState==-2){
+        if(pathTimer.getElapsedTimeSeconds() > 3.75 && pathState==-2){
             setPathState(3);
         }
-        if(pathTimer.getElapsedTimeSeconds() > 3 && pathState==-4){
+        if(pathTimer.getElapsedTimeSeconds() > 3.25 && pathState==-4){
             setPathState(6);
         }
-        if(pathTimer.getElapsedTimeSeconds() >3 && pathState==-7){
+        if(pathTimer.getElapsedTimeSeconds() >2.5 && pathState==-7){
             setPathState(9);
         }
     }

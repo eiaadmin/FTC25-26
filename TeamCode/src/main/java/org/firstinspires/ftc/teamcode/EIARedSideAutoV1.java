@@ -72,19 +72,37 @@ public class EIARedSideAutoV1 extends OpMode {
     private final Pose startPose = new Pose(123.31, 122.29, Math.toRadians(-142)); // Start Pose of our robot.
     private final Pose scorePose = new Pose(83.4, 80.1, Math.toRadians(-135)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
     //77.22, 74.56
-    private final Pose pickup1Pose = new Pose(79.48, 30.73,Math.toRadians(0)); // Grab Highest (First Set) of Artifacts from the Spike Mark.
-    //88.49, 29.09
-    private final Pose pickup1grabPose = new Pose(124.75, 32.16,Math.toRadians(0));
-    //123.3, 32.36
-    //private final Pose pickup1ControlPose = new Pose(62.88, 17.21, Math.toRadians(0));
+    /*private final Pose pickup1Pose = new Pose(77.84, 27.86,Math.toRadians(0)); // Grab Highest (First Set) of Artifacts from the Spike Mark.
+    //81, 30.32
+    private final Pose pickup1grabPose = new Pose(127.82, 31.75,Math.toRadians(0));
     private final Pose pickup2Pose = new Pose(83.4, 80.1, Math.toRadians(-135)); // Score Highest (First Set) of Artifacts from the Spike Mark.
-    private final Pose pickup2ControlPose = new Pose(79.48, 45.06, Math.toRadians(-135));
-    //private final Pose pickup3Pose = new Pose(131.10, 52.85, Math.toRadians(0)); // Grab Middle (Second Set) of Artifacts from the Spike Mark.
-    private final Pose pickup3Pose = new Pose(80.91, 51.62, Math.toRadians(0)); //89.51, 52.44
+    private final Pose pickup2ControlPose = new Pose(80.30, 18.03, Math.toRadians(-135));
+    private final Pose pickup3Pose = new Pose(80.5, 49.78, Math.toRadians(0)); //80.91, 51.62
     //private final Pose pickup3ControlPose = new Pose(34.41, 57.76, Math.toRadians(0));
-    private final Pose pickup3grabPose = new Pose(125.36, 57.35, Math.toRadians(0));
+    private final Pose pickup3grabPose = new Pose(126.99, 53.46, Math.toRadians(0));//125.36, 57.35
     private final Pose pickup4Pose = new Pose(83.4, 80.1, Math.toRadians(-135)); // Score Middle (Second Set) of Artifacts from the Spike Mark.
-    private final Pose pickup4ControlPose = new Pose(79.48, 45.06, Math.toRadians(-135));
+    private final Pose pickup4ControlPose = new Pose(80.30, 18.03, Math.toRadians(-135));
+    //private final Pose pickup5Pose = new Pose(126.59, 84.19, Math.toRadians(0)); // Grab Lowest (Third Set) of Artifacts from the Spike Mark.
+
+    private final Pose pickup5Pose = new Pose(82.75,71.49, Math.toRadians(0));
+    private final Pose pickup5grabPose = new Pose(126.79, 80.30, Math.toRadians(0));
+    //129.87, 85.21
+    private final Pose pickup6Pose = new Pose(83.4, 80.1, Math.toRadians(-135)); // Score Lowest (Third Set) of Artifacts from the Spike Mark.
+    private final Pose pickup6ControlPose = new Pose(81, 70, Math.toRadians(-139));
+    private final Pose landingPose = new Pose(84, 64, Math.toRadians(-139)); // Landing Pose of our robot. It is facing the goal at a 135 degree angle.
+    */
+    private final Pose pickup1Pose = new Pose(81.12, 26.83,Math.toRadians(0)); // Grab Highest (First Set) of Artifacts from the Spike Mark.
+    //82.14, 27.86
+    private final Pose pickup1grabPose = new Pose(124.1, 27.86,Math.toRadians(0));
+
+    private final Pose pickup2Pose = new Pose(83.4, 80.1, Math.toRadians(-135)); // Score Highest (First Set) of Artifacts from the Spike Mark.
+    private final Pose pickup2ControlPose = new Pose(76.81, 31.14, Math.toRadians(-135));
+    //private final Pose pickup3Pose = new Pose(131.10, 52.85, Math.toRadians(0)); // Grab Middle (Second Set) of Artifacts from the Spike Mark.
+    private final Pose pickup3Pose = new Pose(82.34, 51.4, Math.toRadians(0)); //80.91, 51.62
+    //private final Pose pickup3ControlPose = new Pose(34.41, 57.76, Math.toRadians(0));
+    private final Pose pickup3grabPose = new Pose(126.38, 53.67, Math.toRadians(0));//125.36, 57.35
+    private final Pose pickup4Pose = new Pose(83.4, 80.1, Math.toRadians(-135)); // Score Middle (Second Set) of Artifacts from the Spike Mark.
+    private final Pose pickup4ControlPose = new Pose(76.81, 31.14, Math.toRadians(-135));
     //private final Pose pickup5Pose = new Pose(126.59, 84.19, Math.toRadians(0)); // Grab Lowest (Third Set) of Artifacts from the Spike Mark.
     private final Pose pickup5Pose = new Pose(82.75,71.49, Math.toRadians(0));
     private final Pose pickup5grabPose = new Pose(126.79, 80.30, Math.toRadians(0));
@@ -93,6 +111,7 @@ public class EIARedSideAutoV1 extends OpMode {
     private final Pose pickup6ControlPose = new Pose(81, 70, Math.toRadians(-139));
     private final Pose landingPose = new Pose(84, 64, Math.toRadians(-139)); // Landing Pose of our robot. It is facing the goal at a 135 degree angle.
     private Path scorePreload;
+
     private PathChain grabPickup1, scorePickup1, grabPickup2, scorePickup2, grabPickup3, scorePickup3, landingPath;
 
 
@@ -152,17 +171,20 @@ public class EIARedSideAutoV1 extends OpMode {
         rollerIntakeMotor.setPower(INTAKE_POWER_PPG);
         shootrollerServo.setPower(FEED_REVERSE);
 
-        if(pathTimer.getElapsedTimeSeconds() > 4 && pathState==-2){
+        if(pathTimer.getElapsedTimeSeconds() > 3.85 && pathState==-2){
             setPathState(3);
         }
-        if(pathTimer.getElapsedTimeSeconds() > 4 && pathState==-4){
+        if(pathTimer.getElapsedTimeSeconds() > 3.10 && pathState==-4){
             setPathState(6);
         }
-        if(pathTimer.getElapsedTimeSeconds() >3 && pathState==-7){
+        if(pathTimer.getElapsedTimeSeconds() >2.10 && pathState==-7){
             setPathState(9);
         }
     }
     public void enableShooter() {
+
+        //telemetry.addData("test local",PRESET_HIGH_DEG);
+        //telemetry.update();
 
         shootServo.setPosition(degToPos(PRESET_HIGH_DEG));
         // Command target velocity
@@ -186,19 +208,19 @@ public class EIARedSideAutoV1 extends OpMode {
             shootrollerServo.setPower(0.0);
         }
 
-        if(pathTimer.getElapsedTimeSeconds() > 3 && pathState ==-1) {
+        if(pathTimer.getElapsedTimeSeconds() > 3.60 && pathState ==-1) {
             setPathState(2);
             feedEnabled = false;
         }
-        if(pathTimer.getElapsedTimeSeconds() > 3 && pathState ==-3) {
+        if(pathTimer.getElapsedTimeSeconds() > 3.60 && pathState ==-3) {
             setPathState(5);
             feedEnabled = false;
         }
-        if(pathTimer.getElapsedTimeSeconds() > 3 && pathState ==-6) {
+        if(pathTimer.getElapsedTimeSeconds() > 3.60 && pathState ==-6) {
             setPathState(8);
             feedEnabled = false;
         }
-        if(pathTimer.getElapsedTimeSeconds() > 3 && pathState ==-9) {
+        if(pathTimer.getElapsedTimeSeconds() > 3.60 && pathState ==-9) {
             setPathState(11);
             feedEnabled = false;
         }
@@ -216,10 +238,8 @@ public class EIARedSideAutoV1 extends OpMode {
         /* This is our grabPickup1 PathChain. We are using a single path with a BezierLine, which is a straight line. */
         grabPickup1 = follower.pathBuilder()
                 .addPath(new BezierLine(scorePose,  pickup1Pose))
-                //.setLinearHeadingInterpolation(scorePose.getHeading(), pickup1Pose.getHeading())
                 .setConstantHeadingInterpolation(Math.toRadians(0))
                 .addPath(new BezierLine(pickup1Pose,  pickup1grabPose))
-                //.setLinearHeadingInterpolation(pickup1Pose.getHeading(), pickup1grabPose.getHeading())
                 .setConstantHeadingInterpolation(Math.toRadians(0))
                 .build();
 

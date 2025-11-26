@@ -1,0 +1,184 @@
+package org.firstinspires.ftc.teamcode;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
+import com.qualcomm.hardware.limelightvision.LLResult;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.Range;
+@TeleOp(name="RobotCentric_TeleOp", group="Linear OpMode")
+public class RobotCentric_TeleOp extends LinearOpMode {
+    // ========= DRIVE MOTORS =========
+    private DcMotor frontLeftMotor, backLeftMotor, frontRightMotor, backRightMotor;
+    // ========= MECHANISMS =========
+    private DcMotorEx flywheelMotor;
+    private DcMotor rollerIntakeMotor;
+    private CRServo shootrollerServo;
+    private Servo shootServo;
+    private Servo hardstopServo;
+    private Limelight3A limelight;
+    // ========== HOOD CONSTANTS ==========
+    private static final double MIN_POS = 0;
+    private static final double MAX_POS = 1;
+    private static final double HOOD_MIN_DEG = 0.0;
+    private static final double HOOD_MAX_DEG = 40.0;
+    // Hood Presets (manual)
+    private static final double PRESET_LOW_DEG  = 10.0;
+    private static final double PRESET_MID_DEG  = 24.0;
+    private static final double PRESET_HIGH_DEG = 35.0;
+    // ========== FLYWHEEL CONSTANTS ==========
+    private static final double TICKS_PER_REV = 28.0;
+    private static final double GEAR_RATIO    = 1.0;
+    private static final double MAX_RPM = 4500.0;
+    // Stop-and-go hysteresis
+    private static final double RESUME_RPM_FRAC = 0.85;
+    private static final double PAUSE_RPM_FRAC  = 0.80;
+    // Intake/Feeder Powers
+    private static final double INTAKE_POWER = 1.0;
+    private static final double FEED_FORWARD = -1.0;
+    private static final double FEED_REVERSE = +1.0;
+    // ===== Auto-Aim PID (TX) =====
+    private static final double AIM_kP = 0.03;
+    private static final double AIM_kD = 0.002;
+    private double lastTx = 0;
+    private boolean feedEnabled = false;
+    // ===== Distance Model Constants =====
+    private static final double DIST_A = 768.0;
+    private static final double DIST_B = 10.06;
+    // Hood Model (2° lower now)
+    private static final double HOOD_m = 0.3846;
+    private static final double HOOD_b = 6.67;
+    // RPM Model (+200 RPM now)
+    private static final double RPM_m = 32.69;
+    private static final double RPM_b = 1737.0;
+    @Override
+    public void runOpMode() {
+        // DRIVE MOTORS
+        frontLeftMotor  = hardwareMap.dcMotor.get("Flch3");
+        backLeftMotor   = hardwareMap.dcMotor.get("Blch2");
+        frontRightMotor = hardwareMap.dcMotor.get("FRch1");
+        backRightMotor  = hardwareMap.dcMotor.get("BRch0");
+        frontRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        backRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        // MECHANISMS
+        shootServo       = hardwareMap.servo.get("shootexpservo1");
+        shootServo.setDirection(Servo.Direction.REVERSE);
+        hardstopServo    = hardwareMap.servo.get("hardstopServo");
+        shootrollerServo = hardwareMap.crservo.get("shootrollexpservo2");
+        flywheelMotor    = hardwareMap.get(DcMotorEx.class, "Flywheelexp0");
+        rollerIntakeMotor= hardwareMap.dcMotor.get("Rollerintakeexp1");
+        limelight = hardwareMap.get(Limelight3A.class, "EIA Limelight");
+        flywheelMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rollerIntakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        // Center hood at init
+        shootServo.setPosition(0.5);
+        telemetry.addLine("READY");
+        telemetry.update();
+        waitForStart();
+        if (isStopRequested()) return;
+        double targetTPS = 0;
+        while (opModeIsActive()) {
+            // ===== DRIVE CODE (unchanged) =====
+            double y  = -gamepad1.left_stick_y;
+            double x  =  gamepad1.left_stick_x * 1.3;
+            double rx =  gamepad1.right_stick_x;
+            double denom = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1.0);
+            frontLeftMotor.setPower((y + x + rx) / denom);
+            backLeftMotor.setPower( (y - x + rx) / denom);
+            frontRightMotor.setPower((y - x - rx) / denom);
+            backRightMotor.setPower( (y + x - rx) / denom);
+            // ===== Trigger states =====
+            boolean lt = gamepad1.left_trigger  > 0.1;
+            boolean rt = gamepad1.right_trigger > 0.1;
+            // HARDSTOP LOGIC
+            if (rt) hardstopServo.setPosition(0.15);
+            else    hardstopServo.setPosition(0.45);
+            // ===== AUTO SHOOTER ONLY WHEN RT =====
+            LLResult ll = limelight.getLatestResult();
+            double autoRPM = 0;
+            double autoHoodDeg = 0;
+            double tx = 0;
+            double ty = 0;
+            double turnCmd = 0;
+            if (rt && ll != null && ll.isValid()) {
+                tx = ll.getTx();
+                ty = ll.getTy();
+                // ===== Compute distance =====
+                double distanceIn = DIST_A / (ty + DIST_B);
+                // ===== Auto Hood =====
+                autoHoodDeg = HOOD_m * distanceIn + HOOD_b;
+                autoHoodDeg = Range.clip(autoHoodDeg, HOOD_MIN_DEG, HOOD_MAX_DEG);
+                shootServo.setPosition(degToPos(autoHoodDeg));
+                // ===== Auto RPM =====
+                autoRPM = RPM_m * distanceIn + RPM_b;
+                autoRPM = Math.min(autoRPM, MAX_RPM);
+                targetTPS = rpmToTicksPerSec(autoRPM);
+                // ===== TX PID Aim Assist =====
+                double dTx = tx - lastTx;
+                lastTx = tx;
+                turnCmd = AIM_kP * tx + AIM_kD * dTx;
+                // Apply adjusted rotation
+                frontLeftMotor.setPower((y + x + turnCmd) / denom);
+                backLeftMotor.setPower( (y - x + turnCmd) / denom);
+                frontRightMotor.setPower((y - x - turnCmd) / denom);
+                backRightMotor.setPower( (y + x - turnCmd) / denom);
+            }
+            // ===== SHOOTING LOGIC =====
+            if (rt) {
+                flywheelMotor.setVelocity(targetTPS);
+                double curTPS = Math.abs(flywheelMotor.getVelocity());
+                double resumeTPS = rpmToTicksPerSec(autoRPM * RESUME_RPM_FRAC);
+                double pauseTPS  = rpmToTicksPerSec(autoRPM * PAUSE_RPM_FRAC);
+                if (!feedEnabled && curTPS >= resumeTPS) feedEnabled = true;
+                else if (feedEnabled && curTPS < pauseTPS) feedEnabled = false;
+                if (feedEnabled) {
+                    rollerIntakeMotor.setPower(INTAKE_POWER);
+                    shootrollerServo.setPower(FEED_FORWARD);
+                } else {
+                    rollerIntakeMotor.setPower(0);
+                    shootrollerServo.setPower(0);
+                }
+            } else if (lt) {
+                feedEnabled = false;
+                flywheelMotor.setVelocity(0);
+                rollerIntakeMotor.setPower(INTAKE_POWER);
+                shootrollerServo.setPower(FEED_REVERSE);
+            } else {
+                feedEnabled = false;
+                flywheelMotor.setVelocity(0);
+                rollerIntakeMotor.setPower(0);
+                shootrollerServo.setPower(0);
+            }
+            // ===== MANUAL HOOD PRESETS (disabled during RT) =====
+            if (!rt) {
+                if (gamepad1.dpad_down) shootServo.setPosition(degToPos(PRESET_LOW_DEG));
+                else if (gamepad1.dpad_left) shootServo.setPosition(degToPos(PRESET_MID_DEG));
+                else if (gamepad1.dpad_up)   shootServo.setPosition(degToPos(PRESET_HIGH_DEG));
+            }
+            // ===== TELEMETRY =====
+            telemetry.addLine("=== AUTO SHOOTER ===");
+            telemetry.addData("tx", tx);
+            telemetry.addData("ty", ty);
+            telemetry.addData("Distance_in", DIST_A / (ty + DIST_B));
+            telemetry.addData("Auto Hood (deg)", autoHoodDeg);
+            telemetry.addData("Auto RPM", autoRPM);
+            telemetry.addData("TurnCmd", turnCmd);
+            telemetry.addLine("=== MECHANISMS ===");
+            telemetry.addData("FeedEnabled", feedEnabled);
+            telemetry.addData("Hardstop Pos", hardstopServo.getPosition());
+            telemetry.addData("FlywheelVel", flywheelMotor.getVelocity());
+            telemetry.update();
+        }
+    }
+    // ===== HELPERS =====
+    private static double rpmToTicksPerSec(double rpm) {
+        return (rpm / 60.0) * TICKS_PER_REV * GEAR_RATIO;
+    }
+    private double degToPos(double deg) {
+        double pos = Range.scale(deg, HOOD_MIN_DEG, HOOD_MAX_DEG, MIN_POS, MAX_POS);
+        return Range.clip(pos, 0, 1);
+    }
+}

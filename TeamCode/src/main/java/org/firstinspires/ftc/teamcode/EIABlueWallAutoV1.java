@@ -154,10 +154,10 @@ public class EIABlueWallAutoV1 extends OpMode {
         rollerIntakeMotor.setPower(INTAKE_POWER_PPG);
         shootrollerServo.setPower(FEED_REVERSE);
 
-        if(pathTimer.getElapsedTimeSeconds() > 4 && pathState==-2){
+        if(pathTimer.getElapsedTimeSeconds() > 3.75 && pathState==-2){
             setPathState(3);
         }
-        if(pathTimer.getElapsedTimeSeconds() > 3 && pathState==-4){
+        if(pathTimer.getElapsedTimeSeconds() > 3.25 && pathState==-4){
             setPathState(6);
         }
         if(pathTimer.getElapsedTimeSeconds() >2.5 && pathState==-7){
