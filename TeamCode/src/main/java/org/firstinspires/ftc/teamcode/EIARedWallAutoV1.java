@@ -37,6 +37,7 @@ import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -62,7 +63,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
  */
 
 @Autonomous(name = "EIARedWallAutoV1", group = "Decode2526")
-//@Disabled
+@Disabled
 public class EIARedWallAutoV1 extends OpMode {
 
     private Follower follower;
@@ -101,7 +102,7 @@ public class EIARedWallAutoV1 extends OpMode {
     private DcMotorEx flywheelMotor;      // velocity control
     private DcMotor rollerIntakeMotor;
     private CRServo shootrollerServo;   // feeder (CR)
-    private Servo shootServo;         // hood (positional)
+    private Servo shootServo,hardstopServo;         // hood (positional)
 
     // -------- Hood mapping + presets (tune these) --------
     private static final double MIN_POS = 0;
@@ -109,14 +110,14 @@ public class EIARedWallAutoV1 extends OpMode {
     private static final double HOOD_MIN_DEG = 0.0;
     private static final double HOOD_MAX_DEG = 40.0;
 
-    private double PRESET_HIGH_DEG = 35.0;
+    private double PRESET_HIGH_DEG = 30.0;
 
     // -------- Flywheel velocity control --------
     private static final double TICKS_PER_REV = 28.0;  // from your motor specs
     private static final double GEAR_RATIO    = 1.0;   // motor revs per flywheel rev
 
     // RPM targets
-    private static final double TARGET_RPM    = 4500;//4500.0; // as requested
+    private static final double TARGET_RPM    = 3500;//4500;//4500.0; // as requested
     private static final double IDLE_RPM      = 800.0;  // as requested
 
     // Feeding thresholds (hysteresis)
@@ -152,6 +153,7 @@ public class EIARedWallAutoV1 extends OpMode {
         flywheelMotor.setVelocity(0.0);
         rollerIntakeMotor.setPower(INTAKE_POWER_PPG);
         shootrollerServo.setPower(FEED_REVERSE);
+        hardstopServo.setPosition(0.55);
 
         if(pathTimer.getElapsedTimeSeconds() > 3.85 && pathState==-2){
             setPathState(3);
@@ -169,6 +171,7 @@ public class EIARedWallAutoV1 extends OpMode {
         shootServo.setPosition(degToPos(PRESET_HIGH_DEG));
         // Command target velocity
         flywheelMotor.setVelocity(TARGET_TPS);
+        hardstopServo.setPosition(0.15);
         // Measure current speed
         double tps = Math.abs(flywheelMotor.getVelocity());
 
@@ -410,6 +413,8 @@ public class EIARedWallAutoV1 extends OpMode {
         shootrollerServo = hardwareMap.crservo.get("shootrollexpservo2");
         flywheelMotor = hardwareMap.get(DcMotorEx.class, "Flywheelexp0");
         rollerIntakeMotor = hardwareMap.dcMotor.get("Rollerintakeexp1");
+        hardstopServo    = hardwareMap.servo.get("hardstopServo");
+        hardstopServo.setPosition(0.55);
 
         flywheelMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         rollerIntakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);

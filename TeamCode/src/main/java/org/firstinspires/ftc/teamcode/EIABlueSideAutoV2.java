@@ -37,13 +37,11 @@ import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
@@ -62,38 +60,39 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@Autonomous(name = "EIABlueWallAutoV1", group = "Decode2526")
+@Autonomous(name = "EIABlueSideAutoV2", group = "Decode2526")
 
-public class EIABlueWallAutoV1 extends OpMode {
+public class EIABlueSideAutoV2 extends OpMode {
 
     private Follower follower;
-    private Timer pathTimer, actionTimer, opmodeTimer;
-    private final ElapsedTime runtime = new ElapsedTime();
+    private Timer pathTimer, opmodeTimer;
+    //private final ElapsedTime runtime = new ElapsedTime();
     private int pathState;
-    private final Pose startPose = new Pose(56, 8, Math.toRadians(-90)); // Start Pose of our robot.
+    private final Pose startPose = new Pose(20.6, 122.1, Math.toRadians(-45)); // Start Pose of our robot.
     private final Pose scorePose = new Pose(61.4, 81, Math.toRadians(-45)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
     //77.22, 74.56
-    private final Pose pickup1Pose = new Pose(57.15, 25.60,Math.toRadians(-180)); // Grab Highest (First Set) of Artifacts from the Spike Mark.
-    //57.35, 28.06
-    private final Pose pickup1grabPose = new Pose(18.64, 27.45,Math.toRadians(-180)); //17.62, 30.52
+    private final Pose pickup1Pose = new Pose(57.15, 26.2,Math.toRadians(-180));
+    private final Pose pickup1grabPose = new Pose(17, 26.2,Math.toRadians(-180)); //17.62, 30.52
     //126.99, 32.36
     //private final Pose pickup1ControlPose = new Pose(62.88, 17.21, Math.toRadians(0));
     private final Pose pickup2Pose = new Pose(61.4, 81, Math.toRadians(-45)); // Score Highest (First Set) of Artifacts from the Spike Mark.
     private final Pose pickup2ControlPose = new Pose(70.26,31.54, Math.toRadians(-45));
-    //private final Pose pickup3Pose = new Pose(131.10, 52.85, Math.toRadians(0)); // Grab Middle (Second Set) of Artifacts from the Spike Mark.
-    private final Pose pickup3Pose = new Pose(57.35, 49.78, Math.toRadians(-180)); //89.51, 52.44
-    //private final Pose pickup3ControlPose = new Pose(34.41, 57.76, Math.toRadians(0));
-    private final Pose pickup3grabPose = new Pose(18.64, 51, Math.toRadians(-180));
+
+    private final Pose pickup3Pose = new Pose(58.38, 47.4, Math.toRadians(-180)); //89.51, 52.44
+
+    //private final Pose pickup3Pose = new Pose(58.99, 54.07, Math.toRadians(-180));
+    private final Pose pickup3grabPose = new Pose(17, 47.4, Math.toRadians(-180));
     private final Pose pickup4Pose = new Pose(61.4, 81, Math.toRadians(-45)); // Score Middle (Second Set) of Artifacts from the Spike Mark.
-    private final Pose pickup4ControlPose = new Pose(71.08, 39.53, Math.toRadians(-45));
+    private final Pose pickup4ControlPose = new Pose(70.26,31.54, Math.toRadians(-45));
     //private final Pose pickup5Pose = new Pose(126.59, 84.19, Math.toRadians(0)); // Grab Lowest (Third Set) of Artifacts from the Spike Mark.
-    private final Pose pickup5Pose = new Pose(58.38, 73.33, Math.toRadians(-180));
-    private final Pose pickup5grabPose = new Pose(18.44, 77.02, Math.toRadians(-180));
+    private final Pose pickup5Pose = new Pose(60.43, 70.67, Math.toRadians(-180));
+    private final Pose pickup5grabPose = new Pose(17, 70.67, Math.toRadians(-180)); //18.44, 77.02
+
     //private final Pose pickup5ControlPose = new Pose(41.17, 91.56, Math.toRadians(0));
 //129.87, 85.21
     private final Pose pickup6Pose = new Pose(61.4, 81, Math.toRadians(-45)); // Score Lowest (Third Set) of Artifacts from the Spike Mark.
     private final Pose pickup6ControlPose = new Pose(61.4, 78.2, Math.toRadians(-45));
-    private final Pose landingPose = new Pose(56.53, 67, Math.toRadians(-45)); // Landing Pose of our robot. It is facing the goal at a 135 degree angle.
+    private final Pose landingPose = new Pose(47.7, 64.6, Math.toRadians(-45)); // Landing Pose of our robot. It is facing the goal at a 135 degree angle.
     private Path scorePreload;
     private PathChain grabPickup1, scorePickup1, grabPickup2, scorePickup2, grabPickup3, scorePickup3, landingPath;
 
@@ -102,7 +101,7 @@ public class EIABlueWallAutoV1 extends OpMode {
     private DcMotorEx flywheelMotor;      // velocity control
     private DcMotor rollerIntakeMotor;
     private CRServo shootrollerServo;   // feeder (CR)
-    private Servo shootServo;         // hood (positional)
+    private Servo shootServo,hardstopServo;         // hood (positional)
 
     // -------- Hood mapping + presets (tune these) --------
     private static final double MIN_POS = 0;
@@ -110,14 +109,14 @@ public class EIABlueWallAutoV1 extends OpMode {
     private static final double HOOD_MIN_DEG = 0.0;
     private static final double HOOD_MAX_DEG = 40.0;
 
-    private double PRESET_HIGH_DEG = 35.0;
+    private double PRESET_HIGH_DEG = 30.0;
 
     // -------- Flywheel velocity control --------
     private static final double TICKS_PER_REV = 28.0;  // from your motor specs
     private static final double GEAR_RATIO    = 1.0;   // motor revs per flywheel rev
 
     // RPM targets
-    private static final double TARGET_RPM    = 4500;//4500.0; // as requested
+    private static final double TARGET_RPM    = 3500;//4500;//4500.0; // as requested
     private static final double IDLE_RPM      = 800.0;  // as requested
 
     // Feeding thresholds (hysteresis)
@@ -153,11 +152,12 @@ public class EIABlueWallAutoV1 extends OpMode {
         flywheelMotor.setVelocity(0.0);
         rollerIntakeMotor.setPower(INTAKE_POWER_PPG);
         shootrollerServo.setPower(FEED_REVERSE);
+        hardstopServo.setPosition(0.55);
 
-        if(pathTimer.getElapsedTimeSeconds() > 3.75 && pathState==-2){
+        if(pathTimer.getElapsedTimeSeconds() > 4 && pathState==-2){
             setPathState(3);
         }
-        if(pathTimer.getElapsedTimeSeconds() > 3.25 && pathState==-4){
+        if(pathTimer.getElapsedTimeSeconds() > 3.75 && pathState==-4){
             setPathState(6);
         }
         if(pathTimer.getElapsedTimeSeconds() >2.5 && pathState==-7){
@@ -170,6 +170,7 @@ public class EIABlueWallAutoV1 extends OpMode {
         // Command target velocity
         flywheelMotor.setVelocity(TARGET_TPS);
         // Measure current speed
+        hardstopServo.setPosition(0.15);
         double tps = Math.abs(flywheelMotor.getVelocity());
 
         // Hysteresis:
@@ -188,19 +189,19 @@ public class EIABlueWallAutoV1 extends OpMode {
             shootrollerServo.setPower(0.0);
         }
 
-        if(pathTimer.getElapsedTimeSeconds() > 4 && pathState ==-1) {
+        if(pathTimer.getElapsedTimeSeconds() > 2.25 && pathState ==-1) {
             setPathState(2);
             feedEnabled = false;
         }
-        if(pathTimer.getElapsedTimeSeconds() > 3.25 && pathState ==-3) {
+        if(pathTimer.getElapsedTimeSeconds() > 2.25 && pathState ==-3) {
             setPathState(5);
             feedEnabled = false;
         }
-        if(pathTimer.getElapsedTimeSeconds() > 3.25 && pathState ==-6) {
+        if(pathTimer.getElapsedTimeSeconds() > 2.25 && pathState ==-6) {
             setPathState(8);
             feedEnabled = false;
         }
-        if(pathTimer.getElapsedTimeSeconds() > 3 && pathState ==-9) {
+        if(pathTimer.getElapsedTimeSeconds() > 2.25 && pathState ==-9) {
             setPathState(11);
             feedEnabled = false;
         }
@@ -378,6 +379,7 @@ public class EIABlueWallAutoV1 extends OpMode {
 
         // These loop the movements of the robot, these must be called continuously in order to work
         follower.update();
+        flywheelMotor.setVelocity(TARGET_TPS);
         if (pathState == -1 || pathState == -3 || pathState == -6 || pathState == -9) {
             enableShooter();
         }else if (pathState == -2 || pathState == -4 || pathState == -7){
@@ -409,6 +411,7 @@ public class EIABlueWallAutoV1 extends OpMode {
         shootrollerServo = hardwareMap.crservo.get("shootrollexpservo2");
         flywheelMotor = hardwareMap.get(DcMotorEx.class, "Flywheelexp0");
         rollerIntakeMotor = hardwareMap.dcMotor.get("Rollerintakeexp1");
+        hardstopServo    = hardwareMap.servo.get("hardstopServo");
 
         flywheelMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         rollerIntakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);

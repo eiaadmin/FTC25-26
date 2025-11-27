@@ -1,24 +1,26 @@
 package org.firstinspires.ftc.teamcode;
-import com.qualcomm.hardware.limelightvision.Limelight3A;
+
 import com.qualcomm.hardware.limelightvision.LLResult;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
-@TeleOp(name="RobotCentric_TeleOp", group="Linear OpMode")
-public class RobotCentric_TeleOp extends LinearOpMode {
+
+@TeleOp(name="EIARed_TeleOp", group="Linear OpMode")
+public class EIARed_TeleOp extends LinearOpMode {
     // ========= DRIVE MOTORS =========
     private DcMotor frontLeftMotor, backLeftMotor, frontRightMotor, backRightMotor;
     // ========= MECHANISMS =========
     private DcMotorEx flywheelMotor;
     private DcMotor rollerIntakeMotor;
     private CRServo shootrollerServo;
-    private Servo shootServo;
-    private Servo hardstopServo;
+    private Servo shootServo,hardstopServo;
+    //private Servo hardstopServo;
     private Limelight3A limelight;
     // ========== HOOD CONSTANTS ==========
     private static final double MIN_POS = 0;
@@ -71,10 +73,12 @@ public class RobotCentric_TeleOp extends LinearOpMode {
         flywheelMotor    = hardwareMap.get(DcMotorEx.class, "Flywheelexp0");
         rollerIntakeMotor= hardwareMap.dcMotor.get("Rollerintakeexp1");
         limelight = hardwareMap.get(Limelight3A.class, "EIA Limelight");
+        limelight.pipelineSwitch(4);
+        limelight.start();
         flywheelMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         rollerIntakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         // Center hood at init
-        shootServo.setPosition(0.5);
+        //shootServo.setPosition(0.5);
         telemetry.addLine("READY");
         telemetry.update();
         waitForStart();
@@ -95,7 +99,7 @@ public class RobotCentric_TeleOp extends LinearOpMode {
             boolean rt = gamepad1.right_trigger > 0.1;
             // HARDSTOP LOGIC
             if (rt) hardstopServo.setPosition(0.15);
-            else    hardstopServo.setPosition(0.45);
+            else    hardstopServo.setPosition(0.55);
             // ===== AUTO SHOOTER ONLY WHEN RT =====
             LLResult ll = limelight.getLatestResult();
             double autoRPM = 0;
@@ -154,9 +158,9 @@ public class RobotCentric_TeleOp extends LinearOpMode {
             }
             // ===== MANUAL HOOD PRESETS (disabled during RT) =====
             if (!rt) {
-                if (gamepad1.dpad_down) shootServo.setPosition(degToPos(PRESET_LOW_DEG));
-                else if (gamepad1.dpad_left) shootServo.setPosition(degToPos(PRESET_MID_DEG));
-                else if (gamepad1.dpad_up)   shootServo.setPosition(degToPos(PRESET_HIGH_DEG));
+                if (gamepad2.dpad_down) shootServo.setPosition(degToPos(PRESET_LOW_DEG));
+                else if (gamepad2.dpad_left) shootServo.setPosition(degToPos(PRESET_MID_DEG));
+                else if (gamepad2.dpad_up)   shootServo.setPosition(degToPos(PRESET_HIGH_DEG));
             }
             // ===== TELEMETRY =====
             telemetry.addLine("=== AUTO SHOOTER ===");

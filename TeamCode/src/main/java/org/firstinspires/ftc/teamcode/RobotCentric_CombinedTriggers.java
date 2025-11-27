@@ -28,7 +28,7 @@ public class RobotCentric_CombinedTriggers extends LinearOpMode {
     private static final double HOOD_MAX_DEG = 40.0;
     private static final double PRESET_LOW_DEG  = 10.0;
     private static final double PRESET_MID_DEG  = 24.0;
-    private static final double PRESET_HIGH_DEG = 35.0;
+    private static final double PRESET_HIGH_DEG = 60;//35.0;
     // -------- Flywheel RPM Control --------
     private static final double TICKS_PER_REV = 28.0;
     private static final double GEAR_RATIO    = 1.0;
@@ -146,7 +146,11 @@ public class RobotCentric_CombinedTriggers extends LinearOpMode {
             // HOOD PRESETS
             if (gamepad2.dpad_down)  shootServo.setPosition(degToPos(PRESET_LOW_DEG));
             if (gamepad2.dpad_left)  shootServo.setPosition(degToPos(PRESET_MID_DEG));
-            if (gamepad2.dpad_up)    shootServo.setPosition(degToPos(PRESET_HIGH_DEG));
+            if (gamepad2.dpad_up)    {
+                shootServo.setPosition(degToPos(PRESET_HIGH_DEG));
+                telemetry.addData("shooter hood pos ",degToPos(PRESET_HIGH_DEG));
+                telemetry.update();
+            }
             // TELEMETRY
             LLResult dbg = limelight.getLatestResult();
             telemetry.addData("Hardstop", hardstopPos);
