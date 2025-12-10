@@ -19,11 +19,12 @@ public class Constants {
             .mass(9.07185) //4.08233
             .forwardZeroPowerAcceleration(((-51.5815 + -47.7870 + -49.9782 + -51.3841) / 4))
             .lateralZeroPowerAcceleration(((-77.4899 + -72.8000 + -73.0976 + -81.7169) / 4))
-            .useSecondaryTranslationalPIDF(true)
-            .useSecondaryHeadingPIDF(true)
-            .useSecondaryDrivePIDF(true)
+            //.useSecondaryTranslationalPIDF(true)
+            //.useSecondaryHeadingPIDF(true)
+            //.useSecondaryDrivePIDF(true)
             .centripetalScaling(0.00076)
-            .translationalPIDFCoefficients(new PIDFCoefficients(0.10, 0, 0.01, 0)) //0.17
+            //.translationalPIDFCoefficients(new PIDFCoefficients(0.10, 0, 0.01, 0)) //0.17
+            .translationalPIDFCoefficients(new PIDFCoefficients(0.1, 0, 0.01, 0.03)) //0.17
             .headingPIDFCoefficients(new PIDFCoefficients(1.7, 0, 0.1, 0))
             .drivePIDFCoefficients(
                     new FilteredPIDFCoefficients(0.045, 0, 0.000009, 0.6, 0)

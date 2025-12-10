@@ -109,14 +109,14 @@ public class EIARedWallAutoV2 extends OpMode {
     private static final double HOOD_MIN_DEG = 0.0;
     private static final double HOOD_MAX_DEG = 40.0;
 
-    private double PRESET_HIGH_DEG = 30.0;
+    private double PRESET_HIGH_DEG = 27.0;
 
     // -------- Flywheel velocity control --------
     private static final double TICKS_PER_REV = 28.0;  // from your motor specs
     private static final double GEAR_RATIO    = 1.0;   // motor revs per flywheel rev
 
     // RPM targets
-    private static final double TARGET_RPM    = 3500;//4500;//4500.0; // as requested
+    private static final double TARGET_RPM    = 3700;//4500;//4500.0; // as requested
     private static final double IDLE_RPM      = 800.0;  // as requested
 
     // Feeding thresholds (hysteresis)
