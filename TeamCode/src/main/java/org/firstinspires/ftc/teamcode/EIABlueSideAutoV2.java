@@ -109,7 +109,7 @@ public class EIABlueSideAutoV2 extends OpMode {
     private static final double HOOD_MIN_DEG = 0.0;
     private static final double HOOD_MAX_DEG = 40.0;
 
-    private double PRESET_HIGH_DEG = 30.0;
+    private double PRESET_HIGH_DEG = 27.0;
 
     // -------- Flywheel velocity control --------
     private static final double TICKS_PER_REV = 28.0;  // from your motor specs

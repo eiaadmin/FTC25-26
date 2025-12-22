@@ -71,22 +71,19 @@ public class EIABlueWallAutoV2 extends OpMode {
     private final ElapsedTime runtime = new ElapsedTime();
     private int pathState;
     private final Pose startPose = new Pose(56, 8, Math.toRadians(-90)); // Start Pose of our robot.
-    private final Pose scorePose = new Pose(61.4, 81, Math.toRadians(-45)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
-    //77.22, 74.56
-    //private final Pose pickup1Pose = new Pose(57.15, 25.60,Math.toRadians(-180)); // Grab Highest (First Set) of Artifacts from the Spike Mark.
-    //57.35, 28.06
-    private final Pose pickup1Pose = new Pose(57.15, 26.2,Math.toRadians(-180));
-    private final Pose pickup1grabPose = new Pose(17, 26.2,Math.toRadians(-180)); //17.62, 30.52
+    private final Pose scorePose = new Pose(59.8, 83.57, Math.toRadians(-45)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
+    private final Pose pickup1Pose = new Pose(57.15, 27.4,Math.toRadians(-180));//26.2
+    private final Pose pickup1grabPose = new Pose(17, 27.4,Math.toRadians(-180)); //17
     //126.99, 32.36
     //private final Pose pickup1ControlPose = new Pose(62.88, 17.21, Math.toRadians(0));
-    private final Pose pickup2Pose = new Pose(61.4, 81, Math.toRadians(-45)); // Score Highest (First Set) of Artifacts from the Spike Mark.
+    private final Pose pickup2Pose = new Pose(59.8, 83.57, Math.toRadians(-45)); // Score Highest (First Set) of Artifacts from the Spike Mark.
     private final Pose pickup2ControlPose = new Pose(70.26,31.54, Math.toRadians(-45));
 
-    private final Pose pickup3Pose = new Pose(58.38, 47.4, Math.toRadians(-180)); //89.51, 52.44
+    private final Pose pickup3Pose = new Pose(58.38, 48.4, Math.toRadians(-180)); //89.51, 52.44
 
     //private final Pose pickup3Pose = new Pose(58.99, 54.07, Math.toRadians(-180));
-    private final Pose pickup3grabPose = new Pose(17, 47.4, Math.toRadians(-180));
-    private final Pose pickup4Pose = new Pose(61.4, 81, Math.toRadians(-45)); // Score Middle (Second Set) of Artifacts from the Spike Mark.
+    private final Pose pickup3grabPose = new Pose(17, 48.4, Math.toRadians(-180));
+    private final Pose pickup4Pose = new Pose(59.8, 83.57, Math.toRadians(-43)); // Score Middle (Second Set) of Artifacts from the Spike Mark.
     private final Pose pickup4ControlPose = new Pose(70.26,31.54, Math.toRadians(-45));
     //private final Pose pickup5Pose = new Pose(126.59, 84.19, Math.toRadians(0)); // Grab Lowest (Third Set) of Artifacts from the Spike Mark.
     private final Pose pickup5Pose = new Pose(60.43, 70.67, Math.toRadians(-180));
@@ -94,7 +91,7 @@ public class EIABlueWallAutoV2 extends OpMode {
 
     //private final Pose pickup5ControlPose = new Pose(41.17, 91.56, Math.toRadians(0));
 //129.87, 85.21
-    private final Pose pickup6Pose = new Pose(61.4, 81, Math.toRadians(-45)); // Score Lowest (Third Set) of Artifacts from the Spike Mark.
+    private final Pose pickup6Pose = new Pose(59.8, 83.57, Math.toRadians(-45)); // Score Lowest (Third Set) of Artifacts from the Spike Mark.
     private final Pose pickup6ControlPose = new Pose(61.4, 78.2, Math.toRadians(-45));
     private final Pose landingPose = new Pose(47.7, 64.6, Math.toRadians(-45)); // Landing Pose of our robot. It is facing the goal at a 135 degree angle.
     private Path scorePreload;
@@ -115,7 +112,7 @@ public class EIABlueWallAutoV2 extends OpMode {
     private static final double HOOD_MIN_DEG = 0.0;
     private static final double HOOD_MAX_DEG = 40;
 
-    private double PRESET_HIGH_DEG = 30;
+    private double PRESET_HIGH_DEG = 27;
 
     // -------- Flywheel velocity control --------
     private static final double TICKS_PER_REV = 28.0;  // from your motor specs
@@ -160,13 +157,13 @@ public class EIABlueWallAutoV2 extends OpMode {
         shootrollerServo.setPower(FEED_REVERSE);
         hardstopServo.setPosition(0.55);
 
-        if(pathTimer.getElapsedTimeSeconds() > 4 && pathState==-2){
+        if(pathTimer.getElapsedTimeSeconds() > 3.30 && pathState==-2){
             setPathState(3);
         }
-        if(pathTimer.getElapsedTimeSeconds() > 3.75 && pathState==-4){
+        if(pathTimer.getElapsedTimeSeconds() > 2.70 && pathState==-4){
             setPathState(6);
         }
-        if(pathTimer.getElapsedTimeSeconds() >2.5 && pathState==-7){
+        if(pathTimer.getElapsedTimeSeconds() >1.80 && pathState==-7){
             setPathState(9);
         }
     }
