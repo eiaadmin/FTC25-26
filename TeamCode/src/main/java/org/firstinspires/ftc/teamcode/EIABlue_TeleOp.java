@@ -12,7 +12,7 @@ import com.qualcomm.robotcore.util.Range;
 @TeleOp(name="EIABlue_TeleOp", group="Linear OpMode")
 public class EIABlue_TeleOp extends LinearOpMode {
     private DcMotor frontLeftMotor, backLeftMotor, frontRightMotor, backRightMotor;
-    private DcMotorEx flywheelMotor;
+    private DcMotorEx flywheelMotor,flywheelMotor2;
     private DcMotor rollerIntakeMotor;
     private CRServo shootrollerServo;
     private Servo shootServo;
@@ -57,10 +57,12 @@ public class EIABlue_TeleOp extends LinearOpMode {
         hardstopServo = hardwareMap.servo.get("hardstopServo");
         shootrollerServo = hardwareMap.crservo.get("shootrollexpservo2");
         flywheelMotor    = hardwareMap.get(DcMotorEx.class, "Flywheelexp0");
+        flywheelMotor2    = hardwareMap.get(DcMotorEx.class, "Flywheelexp2");
         rollerIntakeMotor= hardwareMap.dcMotor.get("Rollerintakeexp1");
         limelight = hardwareMap.get(Limelight3A.class, "EIA Limelight");
         limelight.pipelineSwitch(0);
         flywheelMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        flywheelMotor2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         rollerIntakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         shootServo.setPosition(0.5);
         telemetry.addLine("READY");
@@ -132,7 +134,9 @@ public class EIABlue_TeleOp extends LinearOpMode {
             // FEED LOGIC
             if (rt) {
                 flywheelMotor.setVelocity(targetTPS);
+                flywheelMotor2.setVelocity(targetTPS);
                 double curTPS   = Math.abs(flywheelMotor.getVelocity());
+                double curTPS2   = Math.abs(flywheelMotor2.getVelocity());
                 double resumeTPS = rpmToTicksPerSec(autoRPM * RESUME_RPM_FRAC);
                 double pauseTPS  = rpmToTicksPerSec(autoRPM * PAUSE_RPM_FRAC);
                 if (!feedEnabled && curTPS >= resumeTPS) feedEnabled = true;
@@ -147,11 +151,13 @@ public class EIABlue_TeleOp extends LinearOpMode {
             } else if (lt) {
                 feedEnabled = false;
                 flywheelMotor.setVelocity(0);
+                flywheelMotor2.setVelocity(0);
                 rollerIntakeMotor.setPower(INTAKE_POWER);
                 shootrollerServo.setPower(FEED_REVERSE);
             } else {
                 feedEnabled = false;
                 flywheelMotor.setVelocity(0);
+                flywheelMotor2.setVelocity(0);
                 rollerIntakeMotor.setPower(0);
                 shootrollerServo.setPower(0);
             }
