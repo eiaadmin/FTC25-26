@@ -62,7 +62,7 @@ public class EIABlue_TeleOp extends LinearOpMode {
         limelight = hardwareMap.get(Limelight3A.class, "EIA Limelight");
         limelight.pipelineSwitch(0);
         flywheelMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        flywheelMotor2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        flywheelMotor2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         rollerIntakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         shootServo.setPosition(0.5);
         telemetry.addLine("READY");
@@ -134,9 +134,9 @@ public class EIABlue_TeleOp extends LinearOpMode {
             // FEED LOGIC
             if (rt) {
                 flywheelMotor.setVelocity(targetTPS);
-                flywheelMotor2.setVelocity(targetTPS);
+                double approxPower = Range.clip(targetTPS / rpmToTicksPerSec(MAX_RPM), 0.0, 1.0);
+                flywheelMotor2.setPower(approxPower);
                 double curTPS   = Math.abs(flywheelMotor.getVelocity());
-                double curTPS2   = Math.abs(flywheelMotor2.getVelocity());
                 double resumeTPS = rpmToTicksPerSec(autoRPM * RESUME_RPM_FRAC);
                 double pauseTPS  = rpmToTicksPerSec(autoRPM * PAUSE_RPM_FRAC);
                 if (!feedEnabled && curTPS >= resumeTPS) feedEnabled = true;

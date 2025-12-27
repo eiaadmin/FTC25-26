@@ -33,10 +33,8 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
-import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
-import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -64,9 +62,9 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@Autonomous(name = "EIABlueWallAutoV3", group = "Decode2526")
+@Autonomous(name = "EIABlueGoalAuto", group = "Decode2526")
 
-public class EIABlueWallAutoV3 extends OpMode {
+public class EIABlueGoalAuto extends OpMode {
 
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
@@ -76,9 +74,11 @@ public class EIABlueWallAutoV3 extends OpMode {
     private Timer rtTimer = new Timer();
     private boolean ltActive = false;
     private static final double MAX_TURN   = 0.6;
-    private final Pose startPose = new Pose(65, 7.625,Math.toRadians(270)); // Start Pose of our robot.
-    private final Pose Path1 = new Pose(55, 19, Math.toRadians(291)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
-    private final Pose Path2 = new Pose(50, 60);
+    private final Pose startPose = new Pose(20, 122.5,Math.toRadians(325)); // Start Pose of our robot.
+    private final Pose Path1 = new Pose(60, 84, Math.toRadians(315)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
+    private final Pose Path2 = new Pose(45, 60);
+
+    private final Pose Path2ControlPose = new Pose(65.5, 73.5);
     private final Pose Path3 = new Pose(13, 60);
     private final Pose Path4 = new Pose(15, 70);
     private final Pose Path4ControlPose = new Pose(46, 66);
@@ -87,7 +87,7 @@ public class EIABlueWallAutoV3 extends OpMode {
     private final Pose Path6 = new Pose(59, 84);
     private final Pose Path7 = new Pose(13, 84);
     private final Pose Path8 = new Pose(60, 84);
-    private final Pose Spike1Sprint = new Pose(49.98, 35.44);
+    private final Pose Spike1Sprint = new Pose(50, 36);
     private final Pose Spike1Intake = new Pose(13, 36);
     private final Pose Spike1Shoot = new Pose(55, 19);
     private final Pose Path9 = new Pose(25, 70);
@@ -114,8 +114,8 @@ public class EIABlueWallAutoV3 extends OpMode {
     // -------- Flywheel velocity control --------
     private static final double TICKS_PER_REV = 28.0;  // from your motor specs
     private static final double GEAR_RATIO    = 1.0;   // motor revs per flywheel rev
-    private static final double X_OFFSET = +6.0;
-    private static final double Y_OFFSET = -12.0;
+    private static final double X_OFFSET = +20.0;
+    private static final double Y_OFFSET = -6.0;
     // RPM targets
     private static final double TARGET_RPM    = 4500.0;//4500;//4500.0; // as requested
     private static final double MAX_RPM       = 4500.0;
@@ -155,9 +155,9 @@ public class EIABlueWallAutoV3 extends OpMode {
 
     private static Pose offXY(Pose s) {
         if (Math.abs(s.getX() - 55.0) < 1e-9 && Math.abs(s.getY() - 19.0) < 1e-9) {
-            return s;
+            return new Pose(s.getX() + 18, s.getY() + 6);
         } else if (Math.abs(s.getX() - 60.0) < 1e-9 && Math.abs(s.getY() - 84.0) < 1e-9) {
-            return new Pose(s.getX() - X_OFFSET - 2, s.getY()); // your special-case rule
+            return new Pose(s.getX() + 4, s.getY()); // your special-case rule
         } else {
             return new Pose(s.getX() + X_OFFSET, s.getY() + Y_OFFSET);
         }
@@ -228,7 +228,7 @@ public class EIABlueWallAutoV3 extends OpMode {
         // - after Path8 -> finishedPathIndex = 8
         // - after Path11 -> finishedPathIndex = 11
         // - after Path14 -> finishedPathIndex = 14
-        if (finishedPathIndex == 1 || finishedPathIndex == 14) {
+        if (finishedPathIndex == 14) {
             activeShotRPM = SHOT_A_RPM;
             activeShotHoodDeg = SHOT_A_HOOD_DEG;
         } else {
@@ -255,12 +255,12 @@ public class EIABlueWallAutoV3 extends OpMode {
         /* This is our scorePreload path. We are using a BezierLine, which is a straight line. */
         scorePreload = follower.pathBuilder()
                 .addPath(new BezierLine(offXY(startPose), offXY(Path1)))
-                .setLinearHeadingInterpolation(Math.toRadians(270), Math.toRadians(291))
+                .setLinearHeadingInterpolation(Math.toRadians(325), Math.toRadians(315))
                 .build();
 
         grabPickup1Path1 = follower.pathBuilder()
-                .addPath(new BezierLine(offXY(Path1), offXY(Path2)))
-                .setLinearHeadingInterpolation(Math.toRadians(291), Math.toRadians(180))
+                .addPath(new BezierCurve(offXY(Path1), offXY(Path2ControlPose), offXY(Path2)))
+                .setLinearHeadingInterpolation(Math.toRadians(315), Math.toRadians(180))
                 .build();
 
         grabPickup1Path2 = follower.pathBuilder()
@@ -305,12 +305,12 @@ public class EIABlueWallAutoV3 extends OpMode {
 
         scorePickup4 = follower.pathBuilder()
                 .addPath(new BezierLine(offXY(Spike1Intake), offXY(Spike1Shoot)))
-                .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(291))
+                .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(295))
                 .build();
 
         landingpath = follower.pathBuilder()
                 .addPath(new BezierLine(offXY(Spike1Shoot), offXY(Path9)))
-                .setLinearHeadingInterpolation(Math.toRadians(291), Math.toRadians(180))
+                .setLinearHeadingInterpolation(Math.toRadians(295), Math.toRadians(180))
                 .build();
     }
 
@@ -456,7 +456,7 @@ public class EIABlueWallAutoV3 extends OpMode {
     private void updateRTPause() {
         if (!rtPauseActive) return;
 
-        if (pathState == 6 || pathState == 10){
+        if (pathState == 1 || pathState == 6 || pathState == 10){
             if (rtTimer.getElapsedTimeSeconds() >= RT_PAUSE_SECONDS_CLOSE) {
                 endRTPause();
                 return;
