@@ -77,16 +77,16 @@ public class EIARedWallAutoV3 extends OpMode {
     private final Pose startPose = new Pose(79, 7.625,Math.toRadians(270)); // Start Pose of our robot.
     private final Pose Path1 = new Pose(89, 17, Math.toRadians(250)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
     private final Pose Path2 = new Pose(94, 60);
-    private final Pose Path3 = new Pose(124, 60);
+    private final Pose Path3 = new Pose(131, 60);
     private final Pose Path4 = new Pose(131, 70);
     private final Pose Path4ControlPose = new Pose(90, 71);
     private final Pose Path5 = new Pose(84, 84);
     private final Pose Path5ControlPose = new Pose(81, 71);
     private final Pose Path6 = new Pose(85, 84);
-    private final Pose Path7 = new Pose(124, 84);
+    private final Pose Path7 = new Pose(131, 84);
     private final Pose Path8 = new Pose(84, 84);
     private final Pose Spike1Sprint = new Pose(94, 35.44);
-    private final Pose Spike1Intake = new Pose(124, 35.5);
+    private final Pose Spike1Intake = new Pose(131, 35.5);
     private final Pose Spike1Shoot = new Pose(89, 17);
     private final Pose Path9 = new Pose(115, 70);
 
@@ -112,18 +112,18 @@ public class EIARedWallAutoV3 extends OpMode {
     // -------- Flywheel velocity control --------
     private static final double TICKS_PER_REV = 28.0;  // from your motor specs
     private static final double GEAR_RATIO    = 1.0;   // motor revs per flywheel rev
-    private static final double X_OFFSET = +6.0;
-    private static final double Y_OFFSET = -12.0;
+    private static final double X_OFFSET = +14;
+    private static final double Y_OFFSET = -8;
     // RPM targets
     private static final double TARGET_RPM    = 4500.0;//4500;//4500.0; // as requested
     private static final double MAX_RPM       = 4500.0;
 
     private static final double SHOT_A_RPM = 4500.0;
-    private static final double SHOT_A_HOOD_DEG = 35.0;
+    private static final double SHOT_A_HOOD_DEG = 33.0;
 
     // After Path 8, 11, 14 -> 4100 RPM, 27 deg
-    private static final double SHOT_B_RPM = 3500.0;
-    private static final double SHOT_B_HOOD_DEG = 32.0;
+    private static final double SHOT_B_RPM = 3400.0;
+    private static final double SHOT_B_HOOD_DEG = 36.0;
 
     // Feeding thresholds (hysteresis)
     private static final double RESUME_RPM_FRAC = 0.85; // resume feed at >= 85% of target
@@ -155,9 +155,9 @@ public class EIARedWallAutoV3 extends OpMode {
         if (Math.abs(s.getX() - 89.0) < 1e-9 && Math.abs(s.getY() - 17.0) < 1e-9) {
             return s;
         } else if (Math.abs(s.getX() - 84.0) < 1e-9 && Math.abs(s.getY() - 84.0) < 1e-9) {
-            return new Pose(s.getX() - X_OFFSET - 2, s.getY()); // your special-case rule
+            return new Pose(s.getX() + 6, s.getY()); // your special-case rule
         } else {
-            return new Pose(s.getX() + X_OFFSET, s.getY() + Y_OFFSET);
+            return new Pose(s.getX() - X_OFFSET, s.getY() + Y_OFFSET);
         }
     }
 
@@ -173,9 +173,9 @@ public class EIARedWallAutoV3 extends OpMode {
         return Range.clip(pos, 0.0, 1.0);
     }
     private boolean isIntakePathState(int state) {
-        return state == 4   // Path3 running
-                || state == 9   // Path9 running
-                || state == 13;  // Path12 running
+        return state == 4 || state == 5   // Path3 running
+                || state == 9 || state == 10   // Path9 running
+                || state == 13 || state == 14;  // Path12 running
     }
     private void updateLTLogic() {
         ltActive = !rtPauseActive && follower.isBusy() && isIntakePathState(pathState);
@@ -253,12 +253,12 @@ public class EIARedWallAutoV3 extends OpMode {
         /* This is our scorePreload path. We are using a BezierLine, which is a straight line. */
         scorePreload = follower.pathBuilder()
                 .addPath(new BezierLine(offXY(startPose), offXY(Path1)))
-                .setLinearHeadingInterpolation(Math.toRadians(270), Math.toRadians(250))
+                .setLinearHeadingInterpolation(Math.toRadians(270), Math.toRadians(245))
                 .build();
 
         grabPickup1Path1 = follower.pathBuilder()
                 .addPath(new BezierLine(offXY(Path1), offXY(Path2)))
-                .setLinearHeadingInterpolation(Math.toRadians(250), Math.toRadians(0))
+                .setLinearHeadingInterpolation(Math.toRadians(245), Math.toRadians(0))
                 .build();
 
         grabPickup1Path2 = follower.pathBuilder()
@@ -273,12 +273,12 @@ public class EIARedWallAutoV3 extends OpMode {
 
         scorePickup2 = follower.pathBuilder()
                 .addPath(new BezierCurve(offXY(Path4), offXY(Path5ControlPose), offXY(Path5)))
-                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(232))
+                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(225))
                 .build();
 
         rotateinPlacePath = follower.pathBuilder()
                 .addPath(new BezierLine(offXY(Path5), offXY(Path6)))
-                .setLinearHeadingInterpolation(Math.toRadians(232), Math.toRadians(0))
+                .setLinearHeadingInterpolation(Math.toRadians(225), Math.toRadians(0))
                 .build();
 
         grabPickup2Path1 = follower.pathBuilder()
@@ -288,12 +288,12 @@ public class EIARedWallAutoV3 extends OpMode {
 
         scorePickup3 = follower.pathBuilder()
                 .addPath(new BezierLine(offXY(Path7), offXY(Path8)))
-                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(232))
+                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(225))
                 .build();
 
         grabPickup3Path1 = follower.pathBuilder()
                 .addPath(new BezierLine(offXY(Path8), offXY(Spike1Sprint)))
-                .setLinearHeadingInterpolation(Math.toRadians(232), Math.toRadians(0))
+                .setLinearHeadingInterpolation(Math.toRadians(225), Math.toRadians(0))
                 .build();
 
         grabPickup3Path2 = follower.pathBuilder()
@@ -303,12 +303,12 @@ public class EIARedWallAutoV3 extends OpMode {
 
         scorePickup4 = follower.pathBuilder()
                 .addPath(new BezierLine(offXY(Spike1Intake), offXY(Spike1Shoot)))
-                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(250))
+                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(245))
                 .build();
 
         landingpath = follower.pathBuilder()
                 .addPath(new BezierLine(offXY(Spike1Shoot), offXY(Path9)))
-                .setLinearHeadingInterpolation(Math.toRadians(250), Math.toRadians(0))
+                .setLinearHeadingInterpolation(Math.toRadians(245), Math.toRadians(0))
                 .build();
     }
 

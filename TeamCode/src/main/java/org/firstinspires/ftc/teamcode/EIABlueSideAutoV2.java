@@ -41,6 +41,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
@@ -69,28 +70,28 @@ public class EIABlueSideAutoV2 extends OpMode {
     //private final ElapsedTime runtime = new ElapsedTime();
     private int pathState;
     private final Pose startPose = new Pose(20.6, 122.1, Math.toRadians(-45)); // Start Pose of our robot.
-    private final Pose scorePose = new Pose(61.4, 81, Math.toRadians(-45)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
+    private final Pose scorePose = new Pose(59.8, 83.57, Math.toRadians(-45)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
     //77.22, 74.56
-    private final Pose pickup1Pose = new Pose(57.15, 26.2,Math.toRadians(-180));
-    private final Pose pickup1grabPose = new Pose(17, 26.2,Math.toRadians(-180)); //17.62, 30.52
+    private final Pose pickup1Pose = new Pose(57.15, 28,Math.toRadians(-180));
+    private final Pose pickup1grabPose = new Pose(17, 28,Math.toRadians(-180)); //17.62, 30.52
     //126.99, 32.36
     //private final Pose pickup1ControlPose = new Pose(62.88, 17.21, Math.toRadians(0));
-    private final Pose pickup2Pose = new Pose(61.4, 81, Math.toRadians(-45)); // Score Highest (First Set) of Artifacts from the Spike Mark.
+    private final Pose pickup2Pose = new Pose(59.8, 83.57, Math.toRadians(-45)); // Score Highest (First Set) of Artifacts from the Spike Mark.
     private final Pose pickup2ControlPose = new Pose(70.26,31.54, Math.toRadians(-45));
 
-    private final Pose pickup3Pose = new Pose(58.38, 47.4, Math.toRadians(-180)); //89.51, 52.44
+    private final Pose pickup3Pose = new Pose(58.38, 49, Math.toRadians(-180)); //89.51, 52.44
 
     //private final Pose pickup3Pose = new Pose(58.99, 54.07, Math.toRadians(-180));
-    private final Pose pickup3grabPose = new Pose(17, 47.4, Math.toRadians(-180));
-    private final Pose pickup4Pose = new Pose(61.4, 81, Math.toRadians(-45)); // Score Middle (Second Set) of Artifacts from the Spike Mark.
+    private final Pose pickup3grabPose = new Pose(17, 49, Math.toRadians(-180));
+    private final Pose pickup4Pose = new Pose(59.8, 83.57, Math.toRadians(-45)); // Score Middle (Second Set) of Artifacts from the Spike Mark.
     private final Pose pickup4ControlPose = new Pose(70.26,31.54, Math.toRadians(-45));
     //private final Pose pickup5Pose = new Pose(126.59, 84.19, Math.toRadians(0)); // Grab Lowest (Third Set) of Artifacts from the Spike Mark.
-    private final Pose pickup5Pose = new Pose(60.43, 70.67, Math.toRadians(-180));
-    private final Pose pickup5grabPose = new Pose(17, 70.67, Math.toRadians(-180)); //18.44, 77.02
+    private final Pose pickup5Pose = new Pose(60.43, 73.67, Math.toRadians(-180));
+    private final Pose pickup5grabPose = new Pose(17, 73.67, Math.toRadians(-180)); //18.44, 77.02
 
     //private final Pose pickup5ControlPose = new Pose(41.17, 91.56, Math.toRadians(0));
 //129.87, 85.21
-    private final Pose pickup6Pose = new Pose(61.4, 81, Math.toRadians(-45)); // Score Lowest (Third Set) of Artifacts from the Spike Mark.
+    private final Pose pickup6Pose = new Pose(59.8, 83.57, Math.toRadians(-45)); // Score Lowest (Third Set) of Artifacts from the Spike Mark.
     private final Pose pickup6ControlPose = new Pose(61.4, 78.2, Math.toRadians(-45));
     private final Pose landingPose = new Pose(47.7, 64.6, Math.toRadians(-45)); // Landing Pose of our robot. It is facing the goal at a 135 degree angle.
     private Path scorePreload;
@@ -98,7 +99,7 @@ public class EIABlueSideAutoV2 extends OpMode {
 
 
     // -------- Mechanisms --------
-    private DcMotorEx flywheelMotor;      // velocity control
+    private DcMotorEx flywheelMotor, flywheelMotor1;      // velocity control
     private DcMotor rollerIntakeMotor;
     private CRServo shootrollerServo;   // feeder (CR)
     private Servo shootServo,hardstopServo;         // hood (positional)
@@ -109,7 +110,7 @@ public class EIABlueSideAutoV2 extends OpMode {
     private static final double HOOD_MIN_DEG = 0.0;
     private static final double HOOD_MAX_DEG = 40.0;
 
-    private double PRESET_HIGH_DEG = 27.0;
+    private double PRESET_HIGH_DEG = 40.0;
 
     // -------- Flywheel velocity control --------
     private static final double TICKS_PER_REV = 28.0;  // from your motor specs
@@ -120,6 +121,8 @@ public class EIABlueSideAutoV2 extends OpMode {
     private static final double IDLE_RPM      = 800.0;  // as requested
 
     // Feeding thresholds (hysteresis)
+    private double lastAppliedTPS;
+    private static final double FW_kP=8.5,FW_kI=0.0,FW_kD=0.0;
     private static final double RESUME_RPM_FRAC = 0.85; // resume feed at >= 85% of target
     private static final double PAUSE_RPM_FRAC  = 0.80; // pause feed if < 80% of target
 
@@ -150,6 +153,7 @@ public class EIABlueSideAutoV2 extends OpMode {
     public void intakeArtifacts() {
 
         flywheelMotor.setVelocity(0.0);
+        flywheelMotor1.setVelocity(0.0);
         rollerIntakeMotor.setPower(INTAKE_POWER_PPG);
         shootrollerServo.setPower(FEED_REVERSE);
         hardstopServo.setPosition(0.55);
@@ -168,7 +172,7 @@ public class EIABlueSideAutoV2 extends OpMode {
 
         shootServo.setPosition(degToPos(PRESET_HIGH_DEG));
         // Command target velocity
-        flywheelMotor.setVelocity(TARGET_TPS);
+       // flywheelMotor.setVelocity(TARGET_TPS);
         // Measure current speed
         hardstopServo.setPosition(0.15);
         double tps = Math.abs(flywheelMotor.getVelocity());
@@ -360,6 +364,8 @@ public class EIABlueSideAutoV2 extends OpMode {
                 }
                 break;
             case 11:
+                flywheelMotor.setVelocity(0.0);
+                flywheelMotor1.setVelocity(0.0);
                 follower.followPath(landingPath, true);
                 follower.setMaxPower(1.0);
                 setPathState(-11);
@@ -379,7 +385,15 @@ public class EIABlueSideAutoV2 extends OpMode {
 
         // These loop the movements of the robot, these must be called continuously in order to work
         follower.update();
+        if (TARGET_TPS > 1 && Math.abs(TARGET_TPS-lastAppliedTPS)>25){
+            double kF = 14.9;
+            PIDFCoefficients flywhlpidf = new PIDFCoefficients(FW_kP,FW_kI,FW_kD,kF);
+            flywheelMotor.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER,flywhlpidf);
+            lastAppliedTPS=TARGET_TPS;
+        }
         flywheelMotor.setVelocity(TARGET_TPS);
+        double approxPower = Range.clip(TARGET_TPS / rpmToTicksPerSec(3500), 0,1);
+        flywheelMotor1.setPower(approxPower);
         if (pathState == -1 || pathState == -3 || pathState == -6 || pathState == -9) {
             enableShooter();
         }else if (pathState == -2 || pathState == -4 || pathState == -7){
@@ -410,10 +424,16 @@ public class EIABlueSideAutoV2 extends OpMode {
 
         shootrollerServo = hardwareMap.crservo.get("shootrollexpservo2");
         flywheelMotor = hardwareMap.get(DcMotorEx.class, "Flywheelexp0");
+        flywheelMotor1 = hardwareMap.get(DcMotorEx.class, "Flywheelexp2");
+
         rollerIntakeMotor = hardwareMap.dcMotor.get("Rollerintakeexp1");
         hardstopServo    = hardwareMap.servo.get("hardstopServo");
 
         flywheelMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        flywheelMotor1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        flywheelMotor.setDirection(DcMotor.Direction.REVERSE);
+        flywheelMotor1.setDirection(DcMotor.Direction.REVERSE);
         rollerIntakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         buildPaths();
         follower.setStartingPose(startPose);

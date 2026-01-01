@@ -62,35 +62,37 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@Autonomous(name = "EIARedSideAutoV2", group = "Decode2526")
-
-public class EIARedSideAutoV2 extends OpMode {
+@Autonomous(name = "EIARedWallOriginalAuto", group = "Decode2526")
+//@Disabled
+public class EIARedWallOriginalAuto extends OpMode {
 
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
     private final ElapsedTime runtime = new ElapsedTime();
     private int pathState;
-    private final Pose startPose = new Pose(123.31, 122.29, Math.toRadians(-142)); // Start Pose of our robot.
+    private final Pose startPose = new Pose(87.67, 8.193, Math.toRadians(-90)); // Start Pose of our robot.
+    //87.67, 8.193
     private final Pose scorePose = new Pose(83.4, 80.1, Math.toRadians(-135)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
 
     private final Pose pickup1Pose = new Pose(79.5, 27,Math.toRadians(0)); // Grab Highest (First Set) of Artifacts from the Spike Mark.
-
+    //82.14, 27.86
     private final Pose pickup1grabPose = new Pose(123.7, 27,Math.toRadians(0));//27.86
-
+    //123.3, 32.36
+    //private final Pose pickup1ControlPose = new Pose(62.88, 17.21, Math.toRadians(0));
     private final Pose pickup2Pose = new Pose(83.4, 80.1, Math.toRadians(-135)); // Score Highest (First Set) of Artifacts from the Spike Mark.
     private final Pose pickup2ControlPose = new Pose(79.48, 45.06, Math.toRadians(-135));
     //private final Pose pickup3Pose = new Pose(131.10, 52.85, Math.toRadians(0)); // Grab Middle (Second Set) of Artifacts from the Spike Mark.
-    private final Pose pickup3Pose = new Pose(82.34, 46, Math.toRadians(0)); //80.91, 51.62
+    private final Pose pickup3Pose = new Pose(82.34, 52, Math.toRadians(0)); //80.91, 51.62
     //private final Pose pickup3ControlPose = new Pose(34.41, 57.76, Math.toRadians(0));
-    private final Pose pickup3grabPose = new Pose(126.38, 46, Math.toRadians(0));//53.67
+    private final Pose pickup3grabPose = new Pose(126.38, 52, Math.toRadians(0));//53.67
     private final Pose pickup4Pose = new Pose(83.4, 80.1, Math.toRadians(-135)); // Score Middle (Second Set) of Artifacts from the Spike Mark.
-    private final Pose pickup4ControlPose = new Pose(77.48, 43.06, Math.toRadians(-140));
+    private final Pose pickup4ControlPose = new Pose(79.48, 45.06, Math.toRadians(-135));
     //private final Pose pickup5Pose = new Pose(126.59, 84.19, Math.toRadians(0)); // Grab Lowest (Third Set) of Artifacts from the Spike Mark.
     private final Pose pickup5Pose = new Pose(82.75,71.49, Math.toRadians(0));
     private final Pose pickup5grabPose = new Pose(126.79, 80.30, Math.toRadians(0));
     //129.87, 85.21
     private final Pose pickup6Pose = new Pose(83.4, 80.1, Math.toRadians(-135)); // Score Lowest (Third Set) of Artifacts from the Spike Mark.
-    private final Pose pickup6ControlPose = new Pose(81, 70, Math.toRadians(-140));
+    private final Pose pickup6ControlPose = new Pose(81, 70, Math.toRadians(-139));
     private final Pose landingPose = new Pose(92, 62, Math.toRadians(-139)); // Landing Pose of our robot. It is facing the goal at a 135 degree angle.
     private Path scorePreload;
     private PathChain grabPickup1, scorePickup1, grabPickup2, scorePickup2, grabPickup3, scorePickup3, landingPath;
@@ -116,9 +118,11 @@ public class EIARedSideAutoV2 extends OpMode {
 
     // RPM targets
     private static final double TARGET_RPM    = 3500;//4500;//4500.0; // as requested
+    private static final double IDLE_RPM      = 800.0;  // as requested
 
     private double lastAppliedTPS;
     private static final double FW_kP=8.5,FW_kI=0.0,FW_kD=0.0;
+
     // Feeding thresholds (hysteresis)
     private static final double RESUME_RPM_FRAC = 0.85; // resume feed at >= 85% of target
     private static final double PAUSE_RPM_FRAC  = 0.80; // pause feed if < 80% of target
@@ -389,7 +393,7 @@ public class EIARedSideAutoV2 extends OpMode {
             lastAppliedTPS=TARGET_TPS;
         }
         flywheelMotor.setVelocity(TARGET_TPS);
-        double approxPower = Range.clip(TARGET_TPS / rpmToTicksPerSec(4500), 0,1);
+        double approxPower = Range.clip(TARGET_TPS / rpmToTicksPerSec(3500), 0,1);
         flywheelMotor1.setPower(approxPower);
         if (pathState == -1 || pathState == -3 || pathState == -6 || pathState == -9) {
             enableShooter();
@@ -456,4 +460,3 @@ public class EIARedSideAutoV2 extends OpMode {
     public void stop() {}
 
 }
-
