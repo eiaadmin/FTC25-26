@@ -61,9 +61,9 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@Autonomous(name = "EIABlueSideAutoV2", group = "Decode2526")
+@Autonomous(name = "EIABlueSideAutoOriginal", group = "Decode2526")
 
-public class EIABlueSideAutoV2 extends OpMode {
+public class EIABlueSideAutoOriginal extends OpMode {
 
     private Follower follower;
     private Timer pathTimer, opmodeTimer;

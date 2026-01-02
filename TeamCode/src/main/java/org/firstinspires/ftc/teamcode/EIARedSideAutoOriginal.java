@@ -64,7 +64,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 @Autonomous(name = "EIARedSideAutoV2", group = "Decode2526")
 
-public class EIARedSideAutoV2 extends OpMode {
+public class EIARedSideAutoOriginal extends OpMode {
 
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
