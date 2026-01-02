@@ -25,9 +25,13 @@ android {
         jniLibs.useLegacyPackaging true
     }
 }
-
+repositories {
+    maven { url "https://repo.dairy.foundation/releases" }
+}
 dependencies {
     implementation project(':FtcRobotController')
     implementation "com.bylazar:fullpanels"
     implementation 'androidx.xr.runtime:runtime:1.0.0-alpha06'
+    implementation "org.solverslib:core:0.3.3" // core
+    implementation "org.solverslib:pedroPathing:0.3.3" // pedroPathing
 }

@@ -27,7 +27,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode; // make sure this aligns with class location
+package org.firstinspires.ftc.teamcode.Archive; // make sure this aligns with class location
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierCurve;
@@ -36,7 +36,6 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -63,9 +62,9 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@Autonomous(name = "EIARedGoalAuto", group = "Decode2526")
-@Disabled
-public class EIARedGoalAuto extends OpMode {
+@Autonomous(name = "EIABlueWallAutoV3", group = "Decode2526")
+
+public class EIABlueWallAutoV3 extends OpMode {
 
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
@@ -75,21 +74,21 @@ public class EIARedGoalAuto extends OpMode {
     private Timer rtTimer = new Timer();
     private boolean ltActive = false;
     private static final double MAX_TURN   = 0.6;
-    private final Pose startPose = new Pose(124, 122.5,Math.toRadians(215)); // Start Pose of our robot.
-    private final Pose Path1 = new Pose(84, 84, Math.toRadians(225)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
-    private final Pose Path2 = new Pose(94, 60);
-    private final Pose Path3 = new Pose(131, 60);
-    private final Pose Path4 = new Pose(131, 70);
-    private final Pose Path4ControlPose = new Pose(90, 71);
-    private final Pose Path5 = new Pose(84, 84);
-    private final Pose Path5ControlPose = new Pose(81, 71);
-    private final Pose Path6 = new Pose(85, 84);
-    private final Pose Path7 = new Pose(131, 84);
-    private final Pose Path8 = new Pose(84, 84);
-    private final Pose Spike1Sprint = new Pose(94, 35.44);
-    private final Pose Spike1Intake = new Pose(131, 35.5);
-    private final Pose Spike1Shoot = new Pose(89, 17);
-    private final Pose Path9 = new Pose(115, 70);
+    private final Pose startPose = new Pose(65, 7.625,Math.toRadians(270)); // Start Pose of our robot.
+    private final Pose Path1 = new Pose(55, 19, Math.toRadians(291)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
+    private final Pose Path2 = new Pose(50, 60);
+    private final Pose Path3 = new Pose(13, 60);
+    private final Pose Path4 = new Pose(15, 70);
+    private final Pose Path4ControlPose = new Pose(46, 66);
+    private final Pose Path5 = new Pose(60, 84);
+    private final Pose Path5ControlPose = new Pose(63, 71);
+    private final Pose Path6 = new Pose(59, 84);
+    private final Pose Path7 = new Pose(13, 84);
+    private final Pose Path8 = new Pose(60, 84);
+    private final Pose Spike1Sprint = new Pose(49.98, 35.44);
+    private final Pose Spike1Intake = new Pose(13, 36);
+    private final Pose Spike1Shoot = new Pose(55, 19);
+    private final Pose Path9 = new Pose(25, 70);
 
     private PathChain scorePreload,grabPickup1Path1,grabPickup1Path2, scorePickup2,releaseGatePath,rotateinPlacePath,grabPickup2Path1,scorePickup3,grabPickup3Path1,grabPickup3Path2,scorePickup4,landingpath;
     //private Path scorePreload;
@@ -113,18 +112,18 @@ public class EIARedGoalAuto extends OpMode {
     // -------- Flywheel velocity control --------
     private static final double TICKS_PER_REV = 28.0;  // from your motor specs
     private static final double GEAR_RATIO    = 1.0;   // motor revs per flywheel rev
-    private static final double X_OFFSET = -12;
-    private static final double Y_OFFSET = -8;
+    private static final double X_OFFSET = +6.0;
+    private static final double Y_OFFSET = -12.0;
     // RPM targets
     private static final double TARGET_RPM    = 4500.0;//4500;//4500.0; // as requested
     private static final double MAX_RPM       = 4500.0;
 
     private static final double SHOT_A_RPM = 4500.0;
-    private static final double SHOT_A_HOOD_DEG = 33.0;
+    private static final double SHOT_A_HOOD_DEG = 35.0;
 
     // After Path 8, 11, 14 -> 4100 RPM, 27 deg
-    private static final double SHOT_B_RPM = 3400.0;
-    private static final double SHOT_B_HOOD_DEG = 36.0;
+    private static final double SHOT_B_RPM = 3500.0;
+    private static final double SHOT_B_HOOD_DEG = 32.0;
 
     // Feeding thresholds (hysteresis)
     private static final double RESUME_RPM_FRAC = 0.85; // resume feed at >= 85% of target
@@ -153,10 +152,10 @@ public class EIARedGoalAuto extends OpMode {
     private boolean feedEnabled = false;
 
     private static Pose offXY(Pose s) {
-        if (Math.abs(s.getX() - 89.0) < 1e-9 && Math.abs(s.getY() - 17.0) < 1e-9) {
+        if (Math.abs(s.getX() - 55.0) < 1e-9 && Math.abs(s.getY() - 19.0) < 1e-9) {
             return s;
-        } else if (Math.abs(s.getX() - 84.0) < 1e-9 && Math.abs(s.getY() - 84.0) < 1e-9) {
-            return new Pose(s.getX() + 4, s.getY()); // your special-case rule
+        } else if (Math.abs(s.getX() - 60.0) < 1e-9 && Math.abs(s.getY() - 84.0) < 1e-9) {
+            return new Pose(s.getX() - X_OFFSET - 2, s.getY()); // your special-case rule
         } else {
             return new Pose(s.getX() + X_OFFSET, s.getY() + Y_OFFSET);
         }
@@ -174,9 +173,9 @@ public class EIARedGoalAuto extends OpMode {
         return Range.clip(pos, 0.0, 1.0);
     }
     private boolean isIntakePathState(int state) {
-        return state == 4 || state == 5   // Path3 running
-                || state == 9 || state == 10   // Path9 running
-                || state == 13 || state == 14;  // Path12 running
+        return state == 4   // Path3 running
+                || state == 9   // Path9 running
+                || state == 13;  // Path12 running
     }
     private void updateLTLogic() {
         ltActive = !rtPauseActive && follower.isBusy() && isIntakePathState(pathState);
@@ -254,32 +253,32 @@ public class EIARedGoalAuto extends OpMode {
         /* This is our scorePreload path. We are using a BezierLine, which is a straight line. */
         scorePreload = follower.pathBuilder()
                 .addPath(new BezierLine(offXY(startPose), offXY(Path1)))
-                .setLinearHeadingInterpolation(Math.toRadians(215), Math.toRadians(225))
+                .setLinearHeadingInterpolation(Math.toRadians(270), Math.toRadians(291))
                 .build();
 
         grabPickup1Path1 = follower.pathBuilder()
                 .addPath(new BezierLine(offXY(Path1), offXY(Path2)))
-                .setLinearHeadingInterpolation(Math.toRadians(225), Math.toRadians(0))
+                .setLinearHeadingInterpolation(Math.toRadians(291), Math.toRadians(180))
                 .build();
 
         grabPickup1Path2 = follower.pathBuilder()
                 .addPath(new BezierLine(offXY(Path2), offXY(Path3)))
-                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(0))
+                .setTangentHeadingInterpolation()
                 .build();
 
         releaseGatePath = follower.pathBuilder()
                 .addPath(new BezierCurve(offXY(Path3), offXY(Path4ControlPose), offXY(Path4)))
-                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(0))
+                .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
                 .build();
 
         scorePickup2 = follower.pathBuilder()
                 .addPath(new BezierCurve(offXY(Path4), offXY(Path5ControlPose), offXY(Path5)))
-                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(225))
+                .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(315))
                 .build();
 
         rotateinPlacePath = follower.pathBuilder()
                 .addPath(new BezierLine(offXY(Path5), offXY(Path6)))
-                .setLinearHeadingInterpolation(Math.toRadians(225), Math.toRadians(0))
+                .setLinearHeadingInterpolation(Math.toRadians(315), Math.toRadians(180))
                 .build();
 
         grabPickup2Path1 = follower.pathBuilder()
@@ -289,27 +288,27 @@ public class EIARedGoalAuto extends OpMode {
 
         scorePickup3 = follower.pathBuilder()
                 .addPath(new BezierLine(offXY(Path7), offXY(Path8)))
-                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(225))
+                .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(315))
                 .build();
 
         grabPickup3Path1 = follower.pathBuilder()
                 .addPath(new BezierLine(offXY(Path8), offXY(Spike1Sprint)))
-                .setLinearHeadingInterpolation(Math.toRadians(225), Math.toRadians(0))
+                .setLinearHeadingInterpolation(Math.toRadians(315), Math.toRadians(180))
                 .build();
 
         grabPickup3Path2 = follower.pathBuilder()
                 .addPath(new BezierLine(offXY(Spike1Sprint), offXY(Spike1Intake)))
-                .setTangentHeadingInterpolation()
+                .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
                 .build();
 
         scorePickup4 = follower.pathBuilder()
                 .addPath(new BezierLine(offXY(Spike1Intake), offXY(Spike1Shoot)))
-                .setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(245))
+                .setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(291))
                 .build();
 
         landingpath = follower.pathBuilder()
                 .addPath(new BezierLine(offXY(Spike1Shoot), offXY(Path9)))
-                .setLinearHeadingInterpolation(Math.toRadians(245), Math.toRadians(0))
+                .setLinearHeadingInterpolation(Math.toRadians(291), Math.toRadians(180))
                 .build();
     }
 
@@ -556,7 +555,9 @@ public class EIARedGoalAuto extends OpMode {
         rollerIntakeMotor = hardwareMap.dcMotor.get("Rollerintakeexp1");
 
         flywheelMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        flywheelMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         flywheelMotor2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        flywheelMotor2.setDirection(DcMotorSimple.Direction.REVERSE);
         rollerIntakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         hardstopServo    = hardwareMap.servo.get("hardstopServo");
         hardstopServo.setPosition(0.55);
