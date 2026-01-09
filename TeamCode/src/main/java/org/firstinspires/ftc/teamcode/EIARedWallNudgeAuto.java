@@ -73,26 +73,27 @@ public class EIARedWallNudgeAuto extends OpMode {
     private final Pose startPose = new Pose(79, 7.625,Math.toRadians(270)); // Start Pose of our robot.
     private final Pose nudgePose = new Pose(100, 7.625,Math.toRadians(270));
     private final Pose scorePose1 = new Pose(89, 17, Math.toRadians(245)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
-    private final Pose scorePose = new Pose(93.4, 80.1, Math.toRadians(-135));
+    private final Pose scorePose = new Pose(93.4, 83.57, Math.toRadians(-135));
+    private final Pose scoreControlPose = new Pose(79.48, 45.06, Math.toRadians(-135));
     private final Pose pickup1Pose = new Pose(79.5, 27,Math.toRadians(0)); // Grab Highest (First Set) of Artifacts from the Spike Mark.
     //82.14, 27.86
-    private final Pose pickup1grabPose = new Pose(130, 27,Math.toRadians(0));//27.86
+    private final Pose pickup1grabPose = new Pose(135, 27,Math.toRadians(0));//27.86
     //123.3, 32.36
     //private final Pose pickup1ControlPose = new Pose(62.88, 17.21, Math.toRadians(0));
-    private final Pose pickup2Pose = new Pose(93.4, 80.1, Math.toRadians(-135)); // Score Highest (First Set) of Artifacts from the Spike Mark.
+    private final Pose pickup2Pose = new Pose(93.4, 83.57, Math.toRadians(-135)); // Score Highest (First Set) of Artifacts from the Spike Mark.
     private final Pose pickup2ControlPose = new Pose(79.48, 45.06, Math.toRadians(-135));
     //private final Pose pickup3Pose = new Pose(131.10, 52.85, Math.toRadians(0)); // Grab Middle (Second Set) of Artifacts from the Spike Mark.
     private final Pose pickup3Pose = new Pose(82.34, 52, Math.toRadians(0)); //80.91, 51.62
     //private final Pose pickup3ControlPose = new Pose(34.41, 57.76, Math.toRadians(0));
-    private final Pose pickup3grabPose = new Pose(126.38, 52, Math.toRadians(0));//53.67
-    private final Pose pickup4Pose = new Pose(93.4, 80.1, Math.toRadians(-135)); // Score Middle (Second Set) of Artifacts from the Spike Mark.
+    private final Pose pickup3grabPose = new Pose(135, 52, Math.toRadians(0));//53.67
+    private final Pose pickup4Pose = new Pose(93.4, 83.57, Math.toRadians(-135)); // Score Middle (Second Set) of Artifacts from the Spike Mark.
     private final Pose pickup4ControlPose = new Pose(79.48, 45.06, Math.toRadians(-135));
     //private final Pose pickup5Pose = new Pose(126.59, 84.19, Math.toRadians(0)); // Grab Lowest (Third Set) of Artifacts from the Spike Mark.
-    private final Pose pickup5Pose = new Pose(82.75,71.49, Math.toRadians(0));
-    private final Pose pickup5grabPose = new Pose(126.79, 80.30, Math.toRadians(0));
+    private final Pose pickup5Pose = new Pose(82.34,74.67, Math.toRadians(0));
+    private final Pose pickup5grabPose = new Pose(126.79, 74.67, Math.toRadians(0));
     //129.87, 85.21
-    private final Pose pickup6Pose = new Pose(93.4, 80.1, Math.toRadians(-135)); // Score Lowest (Third Set) of Artifacts from the Spike Mark.
-    private final Pose pickup6ControlPose = new Pose(79.48, 45.06, Math.toRadians(-139));
+    private final Pose pickup6Pose = new Pose(93.4, 83.57, Math.toRadians(-135)); // Score Lowest (Third Set) of Artifacts from the Spike Mark.
+    private final Pose pickup6ControlPose = new Pose(79.48, 65.06, Math.toRadians(-135));
     private final Pose landingPose = new Pose(92, 62, Math.toRadians(-139)); // Landing Pose of our robot. It is facing the goal at a 135 degree angle.
     private PathChain scorePreload,grabPickup1, scorePickup1, grabPickup2, scorePickup2, grabPickup3, scorePickup3, landingPath;
 
@@ -157,13 +158,13 @@ public class EIARedWallNudgeAuto extends OpMode {
         shootrollerServo.setPower(FEED_REVERSE);
         hardstopServo.setPosition(0.55);
 
-        if(pathTimer.getElapsedTimeSeconds() > 3.45 && pathState==-2){
+        if(pathTimer.getElapsedTimeSeconds() > 3.55 && pathState==-2){
             setPathState(3);
         }
-        if(pathTimer.getElapsedTimeSeconds() > 2.65 && pathState==-4){
+        if(pathTimer.getElapsedTimeSeconds() > 3.0 && pathState==-4){
             setPathState(6);
         }
-        if(pathTimer.getElapsedTimeSeconds() >2.65 && pathState==-7){
+        if(pathTimer.getElapsedTimeSeconds() >2.45 && pathState==-7){
             setPathState(9);
         }
     }
@@ -190,19 +191,19 @@ public class EIARedWallNudgeAuto extends OpMode {
             shootrollerServo.setPower(0.0);
         }
 
-        if(pathTimer.getElapsedTimeSeconds() > 2.85 && pathState ==-1) {
+        if(pathTimer.getElapsedTimeSeconds() > 2.05 && pathState ==-1) {
             setPathState(2);
             feedEnabled = false;
         }
-        if(pathTimer.getElapsedTimeSeconds() > 2.55 && pathState ==-3) {
+        if(pathTimer.getElapsedTimeSeconds() > 2.05 && pathState ==-3) {
             setPathState(5);
             feedEnabled = false;
         }
-        if(pathTimer.getElapsedTimeSeconds() > 2.25 && pathState ==-6) {
+        if(pathTimer.getElapsedTimeSeconds() > 2.05 && pathState ==-6) {
             setPathState(8);
             feedEnabled = false;
         }
-        if(pathTimer.getElapsedTimeSeconds() > 2.25 && pathState ==-9) {
+        if(pathTimer.getElapsedTimeSeconds() > 2.05 && pathState ==-9) {
             setPathState(11);
             feedEnabled = false;
         }
@@ -215,8 +216,10 @@ public class EIARedWallNudgeAuto extends OpMode {
                 .setLinearHeadingInterpolation(startPose.getHeading(), nudgePose.getHeading())
                 .addPath(new BezierLine(nudgePose,  scorePose1))
                 .setConstantHeadingInterpolation(scorePose1.getHeading())
-                .addPath(new BezierLine(scorePose1,  scorePose))
-                .setConstantHeadingInterpolation(scorePose.getHeading())
+                .addPath(new BezierCurve(scorePose1,  scoreControlPose, scorePose))
+                .setLinearHeadingInterpolation(scorePose1.getHeading(), scorePose.getHeading())
+                //.addPath(new BezierLine(scorePose1,  scorePose))
+                //.setConstantHeadingInterpolation(scorePose.getHeading())
                 .build();
         /* This is our grabPickup1 PathChain. We are using a single path with a BezierLine, which is a straight line. */
         grabPickup1 = follower.pathBuilder()
@@ -357,6 +360,9 @@ public class EIARedWallNudgeAuto extends OpMode {
                 }
                 break;
             case 11:
+                flywheelMotor.setVelocity(0.0);
+                flywheelMotor1.setVelocity(0.0);
+                shootrollerServo.setPower(FEED_REVERSE);
                 follower.followPath(landingPath, true);
                 follower.setMaxPower(1.0);
                 setPathState(-11);
@@ -443,6 +449,7 @@ public class EIARedWallNudgeAuto extends OpMode {
     public void start() {
         opmodeTimer.resetTimer();
         flywheelMotor.setVelocity(rpmToTicksPerSec(TARGET_RPM));
+        shootServo.setPosition(degToPos(PRESET_HIGH_DEG));
         setPathState(0);
     }
 

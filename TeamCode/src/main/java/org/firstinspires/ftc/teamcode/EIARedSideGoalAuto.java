@@ -77,11 +77,11 @@ public class EIARedSideGoalAuto extends OpMode {
     private final Pose releasegatePose = new Pose(102, 60, Math.toRadians(0)); // Score Highest (First Set) of Artifacts from the Spike Mark.
     private final Pose releasegateEnablePose = new Pose(121,60, Math.toRadians(0));
     private final Pose pickup2Pose = new Pose(83.4, 80.1, Math.toRadians(-135)); // Score Highest (First Set) of Artifacts from the Spike Mark.
-    private final Pose pickup2ControlPose = new Pose(66, 40, Math.toRadians(-135));
-    private final Pose pickup3Pose = new Pose(82.34, 46, Math.toRadians(0));
+    private final Pose pickup2ControlPose = new Pose(66, 65, Math.toRadians(-135));
+    private final Pose pickup3Pose = new Pose(82.75, 46, Math.toRadians(0));
     private final Pose pickup3grabPose = new Pose(118, 46, Math.toRadians(0));//53.67
     private final Pose pickup4Pose = new Pose(83.4, 80.1, Math.toRadians(-135)); // Score Middle (Second Set) of Artifacts from the Spike Mark.
-    private final Pose pickup4ControlPose = new Pose(66, 40, Math.toRadians(-140));
+    private final Pose pickup4ControlPose = new Pose(66, 65, Math.toRadians(-135));
      private final Pose landingPose = new Pose(92, 62, Math.toRadians(-139)); // Landing Pose of our robot. It is facing the goal at a 135 degree angle.
     private Path scorePreload;
     private PathChain grabPickup1, scorePickup1, grabPickup2, scorePickup2, grabPickup3, scorePickup3, landingPath;
@@ -310,6 +310,11 @@ public class EIARedSideGoalAuto extends OpMode {
                 follower.followPath(landingPath, true);
                 follower.setMaxPower(1.0);
                 setPathState(-11);
+                break;
+            case -11:
+                flywheelMotor.setVelocity(0.0);
+                flywheelMotor1.setVelocity(0.0);
+                shootrollerServo.setPower(FEED_REVERSE);
                 break;
         }
     }

@@ -74,19 +74,20 @@ public class EIABlueWallNudgeAuto extends OpMode {
     private final Pose nudgePose = new Pose(45, 7.625,Math.toRadians(270));
     private final Pose scorePose1 = new Pose(55, 19, Math.toRadians(291)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
     private final Pose scorePose = new Pose(55.8, 83.57, Math.toRadians(-45));
+    private final Pose scoreControlPose = new Pose(61.4, 78.2, Math.toRadians(-45));//new Pose(70.26,31.54, Math.toRadians(-45));
     private final Pose pickup1Pose = new Pose(58.38, 29,Math.toRadians(-180));//26.2
     private final Pose pickup1grabPose = new Pose(20, 29,Math.toRadians(-180)); //17
     //126.99, 32.36
     //private final Pose pickup1ControlPose = new Pose(62.88, 17.21, Math.toRadians(0));
     private final Pose pickup2Pose = new Pose(55.8, 83.57, Math.toRadians(-45)); // Score Highest (First Set) of Artifacts from the Spike Mark.
-    private final Pose pickup2ControlPose = new Pose(70.26,31.54, Math.toRadians(-45));
+    private final Pose pickup2ControlPose = new Pose(61.4, 78.2, Math.toRadians(-45));//new Pose(70.26,31.54, Math.toRadians(-45));
 
     private final Pose pickup3Pose = new Pose(58.38, 50, Math.toRadians(-180)); //89.51, 52.44
 
     //private final Pose pickup3Pose = new Pose(58.99, 54.07, Math.toRadians(-180));
     private final Pose pickup3grabPose = new Pose(20, 50, Math.toRadians(-180));
     private final Pose pickup4Pose = new Pose(55.8, 83.57, Math.toRadians(-45)); // Score Middle (Second Set) of Artifacts from the Spike Mark.
-    private final Pose pickup4ControlPose = new Pose(70.26,31.54, Math.toRadians(-45));
+    private final Pose pickup4ControlPose = new Pose(61.4, 78.2, Math.toRadians(-45));//new Pose(70.26,31.54, Math.toRadians(-45));
     //private final Pose pickup5Pose = new Pose(126.59, 84.19, Math.toRadians(0)); // Grab Lowest (Third Set) of Artifacts from the Spike Mark.
     private final Pose pickup5Pose = new Pose(60.43, 74.67, Math.toRadians(-180));
     private final Pose pickup5grabPose = new Pose(20, 74.67, Math.toRadians(-180)); //18.44, 77.02
@@ -228,8 +229,10 @@ public class EIABlueWallNudgeAuto extends OpMode {
                         .setLinearHeadingInterpolation(startPose.getHeading(), nudgePose.getHeading())
                         .addPath(new BezierLine(nudgePose,  scorePose1))
                         .setConstantHeadingInterpolation(scorePose1.getHeading())
-                        .addPath(new BezierLine(scorePose1,  scorePose))
-                        .setConstantHeadingInterpolation(scorePose.getHeading())
+                        .addPath(new BezierCurve(scorePose1,  scoreControlPose, scorePose))
+                        .setLinearHeadingInterpolation(scorePose1.getHeading(), scorePose.getHeading())
+                        //.addPath(new BezierLine(scorePose1,  scorePose))
+                        //.setConstantHeadingInterpolation(scorePose.getHeading())
                         .build();
 
         /* This is our grabPickup1 PathChain. We are using a single path with a BezierLine, which is a straight line. */

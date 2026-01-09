@@ -76,7 +76,7 @@ public class EIABlueSideGoalAuto extends OpMode {
     private final Pose releasegatePose = new Pose(37, 68, Math.toRadians(-180)); // Score Highest (First Set) of Artifacts from the Spike Mark.
     private final Pose releasegateEnablePose = new Pose(19,65, Math.toRadians(-180));
     private final Pose pickup2Pose = new Pose(59.8, 83.57, Math.toRadians(-45)); // Score Highest (First Set) of Artifacts from the Spike Mark.
-    private final Pose pickup2ControlPose = new Pose(70.26,31.54, Math.toRadians(-45));
+    private final Pose pickup2ControlPose = new Pose(70.26,73.67, Math.toRadians(-45));
     private final Pose pickup3Pose = new Pose(58.38, 49, Math.toRadians(-180));
     private final Pose pickup3grabPose = new Pose(24, 49, Math.toRadians(-180));
     private final Pose pickup4Pose = new Pose(59.8, 83.57, Math.toRadians(-45)); // Score Middle (Second Set) of Artifacts from the Spike Mark.
@@ -298,11 +298,14 @@ public class EIABlueSideGoalAuto extends OpMode {
                 }
                 break;
             case 8:
-                flywheelMotor.setVelocity(0.0);
-                flywheelMotor1.setVelocity(0.0);
                 follower.followPath(landingPath, true);
                 follower.setMaxPower(1.0);
                 setPathState(-11);
+                break;
+            case -11:
+                flywheelMotor.setVelocity(0.0);
+                flywheelMotor1.setVelocity(0.0);
+                shootrollerServo.setPower(FEED_REVERSE);
                 break;
         }
     }

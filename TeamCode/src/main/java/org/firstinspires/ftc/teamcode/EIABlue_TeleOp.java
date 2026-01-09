@@ -198,7 +198,7 @@ public class EIABlue_TeleOp extends LinearOpMode {
                     tx = ll.getTx() - 3;
                 }
                 if ( ll.getTy() >= 0 ){
-                    tx = ll.getTx() - 1;
+                    tx = ll.getTx() - 1.5;
                 }
                 ty = ll.getTy();
 
@@ -364,10 +364,10 @@ public class EIABlue_TeleOp extends LinearOpMode {
         tyToRPM.add(-2.15, 4500);
         tyToRPM.add(-2.03, 4500);
         tyToRPM.add(-1.67, 4200);
-        tyToRPM.add( 0.33, 4000);
+        tyToRPM.add( 0.33, 4100);
         tyToRPM.add( 3.26, 4000);
-        tyToRPM.add( 9.40, 3600);
-        tyToRPM.add(16.00, 3000);
+        tyToRPM.add( 9.40, 3700);
+        tyToRPM.add(16.00, 3500);
         tyToRPM.add(100.00, 0);
 
         // Ty -> Hood(deg) (ascending Ty)
@@ -380,8 +380,8 @@ public class EIABlue_TeleOp extends LinearOpMode {
         tyToHoodDeg.add(-1.67, 35);
         tyToHoodDeg.add( 0.33, 35);
         tyToHoodDeg.add( 3.26, 34);
-        tyToHoodDeg.add( 9.40, 25);
-        tyToHoodDeg.add(16.00, 18);
+        tyToHoodDeg.add( 9.40, 29);
+        tyToHoodDeg.add(16.00, 22);
         tyToHoodDeg.add(100.00, 0);
 
         tyToRPM.createLUT();
