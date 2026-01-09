@@ -36,6 +36,7 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -63,7 +64,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
  */
 
 @Autonomous(name = "EIARedWallAutoV3", group = "Decode2526")
-
+@Disabled
 public class EIARedWallAutoV3 extends OpMode {
 
     private Follower follower;
