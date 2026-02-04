@@ -73,7 +73,7 @@ public class EIARedSideGoalGateAuto extends OpMode {
     private int pathState;
     private final Pose startPose = new Pose(123.31, 122.29, Math.toRadians(-142)); // Start Pose of our robot.
     private final Pose scorePose = new Pose(83.4, 80.1, Math.toRadians(-140)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
-    private final Pose pickup1Pose =new Pose(82.75, 46, Math.toRadians(0)); // Grab Highest (First Set) of Artifacts from the Spike Mark.
+    private final Pose pickup1Pose =new Pose(82.0, 46, Math.toRadians(0)); // Grab Highest (First Set) of Artifacts from the Spike Mark.
     private final Pose pickup1grabPose = new Pose(123.38, 43, Math.toRadians(0));//27.86
     private final Pose pickup1scorePose = new Pose(83.4, 80.1, Math.toRadians(-140));//83.4, 80.1, Math.toRadians(-140));
     private final Pose pickup1ControlPose = new Pose(66, 65, Math.toRadians(-135));
@@ -90,7 +90,7 @@ public class EIARedSideGoalGateAuto extends OpMode {
     private final Pose pickup3ControlPose = new Pose(66, 65, Math.toRadians(-135));
     private final Pose pickup4Pose =new Pose(82.75,72, Math.toRadians(0)); // Grab Highest (First Set) of Artifacts from the Spike Mark.
     private final Pose pickup4grabPose = new Pose(110, 72, Math.toRadians(0));
-     private final Pose pickup4scorePose = new Pose(82.4, 86.7, Math.toRadians(-142)); // Landing Pose of our robot. It is facing the goal at a 135 degree angle.
+     private final Pose pickup4scorePose = new Pose(80.4, 86.7, Math.toRadians(-143.5)); // Landing Pose of our robot. It is facing the goal at a 135 degree angle.
     private Path scorePreload;
     private PathChain grabPickup1, scorePickup1, grabPickup2, scorePickup2, grabPickup3, scorePickup3, grabPickup4, scorePickup4;
 
