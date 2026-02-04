@@ -15,20 +15,20 @@ import com.qualcomm.robotcore.util.Range;
 
 import com.seattlesolvers.solverslib.util.InterpLUT;
 
-/*
+
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.Prism.Color;
 import org.firstinspires.ftc.teamcode.Prism.GoBildaPrismDriver;
 import org.firstinspires.ftc.teamcode.Prism.PrismAnimations;
-*/
 
 
-@TeleOp(name="EIARed_TeleOp", group="Linear OpMode")
+
+@TeleOp(name="EIARedTeleOp", group="Linear OpMode")
 public class EIARed_TeleOp extends LinearOpMode {
 
     private DcMotor frontLeftMotor, backLeftMotor, frontRightMotor, backRightMotor;
     private DcMotorEx flywheelMotor, flywheelMotor2;
-    private DcMotor rollerIntakeMotor;
+    private DcMotor rollerIntakeMotor, rollerIntakeMotor2;
     private CRServo shootrollerServo;
     private Servo shootServo;
     private Servo hardstopServo;
@@ -37,7 +37,7 @@ public class EIARed_TeleOp extends LinearOpMode {
     private static final double MIN_POS = 0;
     private static final double MAX_POS = 1;
     private static final double HOOD_MIN_DEG = 0.0;
-    private static final double HOOD_MAX_DEG = 40.0;
+    private static final double HOOD_MAX_DEG = 50.0;
 
     private static final double PRESET_LOW_DEG  = 10.0;
     private static final double PRESET_MID_DEG  = 24.0;
@@ -47,8 +47,10 @@ public class EIARed_TeleOp extends LinearOpMode {
     private static final double GEAR_RATIO    = 1.0;
     private static final double MAX_RPM       = 4500.0;
 
-    private static final double RESUME_RPM_FRAC = 0.75;
-    private static final double PAUSE_RPM_FRAC  = 0.70;
+    private static final double IDLE_RPM       = 3200;//2700;
+
+    private static final double RESUME_RPM_FRAC = 0.85;
+    private static final double PAUSE_RPM_FRAC  = 0.80;
 
     private static final double RESUME_RPM_FRAC_FAR = 0.90;
     private static final double PAUSE_RPM_FRAC_FAR  = 0.85;
@@ -59,12 +61,12 @@ public class EIARed_TeleOp extends LinearOpMode {
     private static final double FEED_REVERSE = +1.0;
 
     // ===== Flywheel PID (kF computed dynamically in RT mode ONLY) =====
-    private static final double FW_kP = 8.5;
+    private static final double FW_kP = 310;
     private static final double FW_kI = 0.0;
     private static final double FW_kD = 0.0;
 
     // ===== tx PID (dt-based, tolerance snap, clamped) =====
-    private static final double AIM_TOL_DEG = 1.0; // aligned if |tx| <= tolerance
+    private static final double AIM_TOL_DEG = 1.5; // aligned if |tx| <= tolerance
     private static final double MAX_TURN   = 0.6;  // clamp PID output to motor power
 
     private static final double AIM_kP = 0.035;
@@ -89,9 +91,17 @@ public class EIARed_TeleOp extends LinearOpMode {
     private double lastAppliedTPS = -1;
 
     // ---- Sensor ----
+    private GoBildaPrismDriver prism;
+
+    // ---- Sensor ----
     private RevColorSensorV3 colorSense;
 
-    private static final double PROX_THRESHOLD_MM = 75.0;
+    // ---- Animations ----
+    private final PrismAnimations.Solid solidGreen = new PrismAnimations.Solid(Color.GREEN);
+    private final PrismAnimations.Solid solidBlue  = new PrismAnimations.Solid(Color.BLUE);
+
+
+    private static final double PROX_THRESHOLD_MM = 65.0;
 
     // =========================================================
     // RPM DIP COMPENSATION (hood trim based on RPM droop)
@@ -127,6 +137,7 @@ public class EIARed_TeleOp extends LinearOpMode {
         flywheelMotor2   = hardwareMap.get(DcMotorEx.class, "Flywheelexp2");
 
         rollerIntakeMotor = hardwareMap.dcMotor.get("Rollerintakeexp1");
+        rollerIntakeMotor2 = hardwareMap.dcMotor.get("Rollerintakeexp2");
 
         limelight = hardwareMap.get(Limelight3A.class, "EIA Limelight");
         limelight.pipelineSwitch(4);
@@ -140,6 +151,24 @@ public class EIARed_TeleOp extends LinearOpMode {
         flywheelMotor2.setDirection(DcMotorSimple.Direction.REVERSE);
 
         rollerIntakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rollerIntakeMotor2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rollerIntakeMotor2.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        prism = hardwareMap.get(GoBildaPrismDriver.class, "prism");
+        colorSense = hardwareMap.get(RevColorSensorV3.class, "colorsense");
+
+        // Prism strip length (0..119 = 120 LEDs)
+        prism.setStripLength(120);
+
+        // Configure GREEN (full strip)
+        solidGreen.setBrightness(100);
+        solidGreen.setStartIndex(0);
+        solidGreen.setStopIndex(119);
+
+        // Configure BLUE (full strip)
+        solidBlue.setBrightness(100);
+        solidBlue.setStartIndex(0);
+        solidBlue.setStopIndex(119);
 
         //shootServo.setPosition(0.5);
 
@@ -173,7 +202,7 @@ public class EIARed_TeleOp extends LinearOpMode {
 
             // HARDSTOP
             if (rt) hardstopServo.setPosition(0.15);
-            else    hardstopServo.setPosition(0.55);
+            else    hardstopServo.setPosition(0.40);
 
             LLResult ll = limelight.getLatestResult();
             boolean tagSeen = (ll != null && ll.isValid());
@@ -194,12 +223,19 @@ public class EIARed_TeleOp extends LinearOpMode {
             // ==========================
             if (rt && tagSeen) {
 
-                if ( ll.getTy() < -1 ) {
+                tx = ll.getTx();
+
+                //if from far on red it goes to the left of the goal (towards the table) decrease -4 try -4.5.
+                //if from far on red it goes to the right of the goal (towards the mirror) increase -4 try -3.5.
+                //if from close on red it goes to the left of the goal (towards the table) decrease -1.8 try -2.
+                //if from close on red it goes to the right of the goal (towards the mirror) increase -1.8 try -1.6.
+                if ( ll.getTy() <= -14 ) {
                     tx = ll.getTx() - 1.8;
                 }
-                if ( ll.getTy() >= 0 ){
-                    tx = ll.getTx() - 1.5;
+                if ( ll.getTy() > -14 ){
+                    tx = ll.getTx() - 4;
                 }
+
                 ty = ll.getTy();
 
                 if (!manualOverride) {
@@ -230,7 +266,7 @@ public class EIARed_TeleOp extends LinearOpMode {
                     autoHoodDeg += hoodComp;
                     // --------------------------------------------------------------
 
-                    autoHoodDeg = Range.clip(autoHoodDeg, 0, 40);
+                    autoHoodDeg = Range.clip(autoHoodDeg, 0, 50);
                     shootServo.setPosition(degToPos(autoHoodDeg));
 
                     autoRPM = Math.min(autoRPM, MAX_RPM);
@@ -272,7 +308,7 @@ public class EIARed_TeleOp extends LinearOpMode {
             if (rt) {
 
                 if (targetTPS > 1 && Math.abs(targetTPS - lastAppliedTPS) > 25) {
-                    double kF = 14.9;
+                    double kF = 11;
                     PIDFCoefficients pidf = new PIDFCoefficients(FW_kP, FW_kI, FW_kD, kF);
                     flywheelMotor.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidf);
                     lastAppliedTPS = targetTPS;
@@ -287,7 +323,7 @@ public class EIARed_TeleOp extends LinearOpMode {
                 double resumeTPS;
                 double pauseTPS;
 
-                if ( ty < -1 ) {
+                if ( ty < -14 ) {
                     resumeTPS = rpmToTicksPerSec(autoRPM * RESUME_RPM_FRAC_FAR);
                     pauseTPS = rpmToTicksPerSec(autoRPM * PAUSE_RPM_FRAC_FAR);
                 }else{
@@ -299,30 +335,40 @@ public class EIARed_TeleOp extends LinearOpMode {
                 if (!feedEnabled && curTPS >= resumeTPS) feedEnabled = true;
                 else if (feedEnabled && curTPS < pauseTPS) feedEnabled = false;
 
-                if (feedEnabled && tagSeen) {
+                if (feedEnabled && tagSeen && Math.abs(tx) <= AIM_TOL_DEG) {
                     rollerIntakeMotor.setPower(INTAKE_POWER);
+                    rollerIntakeMotor2.setPower(INTAKE_POWER);
                     shootrollerServo.setPower(FEED_FORWARD);
                 } else {
                     rollerIntakeMotor.setPower(0);
+                    rollerIntakeMotor2.setPower(0);
                     shootrollerServo.setPower(0);
                 }
 
             } else if (lt) {
 
                 feedEnabled = false;
-                flywheelMotor.setVelocity(0);
-                flywheelMotor2.setPower(0);
+                targetTPS = rpmToTicksPerSec(IDLE_RPM);
+                flywheelMotor.setVelocity(targetTPS);
+
+                double approxPower = Range.clip(targetTPS / rpmToTicksPerSec(MAX_RPM), 0.0, 1.0);
+                flywheelMotor2.setPower(approxPower);
 
                 rollerIntakeMotor.setPower(INTAKE_POWER);
+                rollerIntakeMotor2.setPower(INTAKE_POWER);
                 shootrollerServo.setPower(FEED_REVERSE);
 
             } else {
 
                 feedEnabled = false;
-                flywheelMotor.setVelocity(0);
-                flywheelMotor2.setPower(0);
+                targetTPS = rpmToTicksPerSec(IDLE_RPM);
+                flywheelMotor.setVelocity(targetTPS);
+
+                double approxPower = Range.clip(targetTPS / rpmToTicksPerSec(MAX_RPM), 0.0, 1.0);
+                flywheelMotor2.setPower(approxPower);
 
                 rollerIntakeMotor.setPower(0);
+                rollerIntakeMotor2.setPower(0);
                 shootrollerServo.setPower(0);
             }
 
@@ -335,6 +381,25 @@ public class EIARed_TeleOp extends LinearOpMode {
             double curTPS_signed = flywheelMotor.getVelocity();
             double curTPS_abs = Math.abs(curTPS_signed);
             double actualRPM = (curTPS_abs / (TICKS_PER_REV * GEAR_RATIO)) * 60.0;
+
+            double distMm = colorSense.getDistance(DistanceUnit.MM);
+            boolean objectDetected = distMm <= PROX_THRESHOLD_MM;
+
+            // Update Prism only on change (or first loop)
+            if (firstUpdate || objectDetected != lastObjectDetected) {
+                prism.clearAllAnimations();
+
+                if (objectDetected) {
+                    // Object close -> GREEN
+                    prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_0, solidGreen);
+                } else {
+                    // Otherwise -> BLUE
+                    prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_0, solidBlue);
+                }
+
+                lastObjectDetected = objectDetected;
+                firstUpdate = false;
+            }
 
             telemetry.addData("DPAD_UP open-loop", dpadUpOpenLoop4500);
             telemetry.addData("tx", tx);
@@ -357,31 +422,35 @@ public class EIARed_TeleOp extends LinearOpMode {
         // MUST be strictly increasing X (Ty) values!
 
         // Ty -> RPM (ascending Ty)
-        tyToRPM.add(-100, 4500);
-        tyToRPM.add(-2.8, 4500);
-        tyToRPM.add(-2.65, 4500);
-        tyToRPM.add(-2.60, 4500);
-        tyToRPM.add(-2.15, 4500);
-        tyToRPM.add(-2.03, 4500);
-        tyToRPM.add(-1.67, 4200);
-        tyToRPM.add( 0.33, 4000);
-        tyToRPM.add( 3.26, 3900);
-        tyToRPM.add( 9.40, 3600);
-        tyToRPM.add(16.00, 3400);
-        tyToRPM.add(100.00, 0);
+        tyToRPM.add(-100, 3900);
+        tyToRPM.add(-15.49, 3950);//-2.8
+        tyToRPM.add(-15.22, 3950);//-2.65
+        tyToRPM.add(-15.00, 3900);//-2.6
+        tyToRPM.add(-14.9, 3900);//2.15
+        tyToRPM.add(-14.6, 3900);//-2.03
+        tyToRPM.add(-14.23, 3600);//-1.67
+        tyToRPM.add( -13.13, 3425);//0.33
+        tyToRPM.add( -11.44, 3150);//3.26
+        tyToRPM.add( -8, 3100);//9.40
+        tyToRPM.add(-4.75, 2800);//16.00
+        tyToRPM.add(0, 2700);//16.00
+        tyToRPM.add(12, 2600);//16.00
+        tyToRPM.add(100.00, 2800);
 
         // Ty -> Hood(deg) (ascending Ty)
-        tyToHoodDeg.add(-100, 35);
-        tyToHoodDeg.add(-2.8, 35);
-        tyToHoodDeg.add(-2.65, 35);
-        tyToHoodDeg.add(-2.60, 35);
-        tyToHoodDeg.add(-2.15, 35);
-        tyToHoodDeg.add(-2.03, 35);
-        tyToHoodDeg.add(-1.67, 35);
-        tyToHoodDeg.add( 0.33, 35);
-        tyToHoodDeg.add( 3.26, 34);
-        tyToHoodDeg.add( 9.40, 29);
-        tyToHoodDeg.add(16.00, 22);
+        tyToHoodDeg.add(-100, 40);
+        tyToHoodDeg.add(-15.49, 40);
+        tyToHoodDeg.add(-15.22, 40);
+        tyToHoodDeg.add(-15.00, 40);
+        tyToHoodDeg.add(-14.9, 40);
+        tyToHoodDeg.add(-14.6, 40);
+        tyToHoodDeg.add(-14.23, 36);
+        tyToHoodDeg.add( -13.13, 36);
+        tyToHoodDeg.add( -11.44, 34);//32
+        tyToHoodDeg.add( -8, 32);//29
+        tyToHoodDeg.add(-4.75, 22);
+        tyToHoodDeg.add(0, 16);
+        tyToHoodDeg.add(12, 8);//16.00
         tyToHoodDeg.add(100.00, 0);
 
         tyToRPM.createLUT();

@@ -41,6 +41,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -62,69 +63,60 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@Autonomous(name = "EIABlueWallNudgeAuto", group = "Decode2526")
+@Autonomous(name = "EIARedSideGoalGateAuto", group = "Decode2526")
 
-public class EIABlueWallNudgeAuto extends OpMode {
+public class EIARedSideGoalGateAuto extends OpMode {
 
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
     private final ElapsedTime runtime = new ElapsedTime();
     private int pathState;
-    private final Pose startPose = new Pose(65, 7.625,Math.toRadians(270)); // Start Pose of our robot.
-    private final Pose nudgePose = new Pose(45, 7.625,Math.toRadians(270));
-    private final Pose scorePose1 = new Pose(55, 19, Math.toRadians(291)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
-    private final Pose scorePose = new Pose(55.8, 83.57, Math.toRadians(-45));
-    private final Pose scoreControlPose = new Pose(61.4, 78.2, Math.toRadians(-45));//new Pose(70.26,31.54, Math.toRadians(-45));
-    private final Pose pickup1Pose = new Pose(58.38, 29,Math.toRadians(-180));//26.2
-    private final Pose pickup1grabPose = new Pose(20, 29,Math.toRadians(-180)); //17
-    //126.99, 32.36
-    //private final Pose pickup1ControlPose = new Pose(62.88, 17.21, Math.toRadians(0));
-    private final Pose pickup2Pose = new Pose(55.8, 83.57, Math.toRadians(-45)); // Score Highest (First Set) of Artifacts from the Spike Mark.
-    private final Pose pickup2ControlPose = new Pose(61.4, 78.2, Math.toRadians(-45));//new Pose(70.26,31.54, Math.toRadians(-45));
+    private final Pose startPose = new Pose(123.31, 122.29, Math.toRadians(-142)); // Start Pose of our robot.
+    private final Pose scorePose = new Pose(83.4, 80.1, Math.toRadians(-140)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
+    private final Pose pickup1Pose =new Pose(82.75, 46, Math.toRadians(0)); // Grab Highest (First Set) of Artifacts from the Spike Mark.
+    private final Pose pickup1grabPose = new Pose(123.38, 43, Math.toRadians(0));//27.86
+    private final Pose pickup1scorePose = new Pose(83.4, 80.1, Math.toRadians(-140));//83.4, 80.1, Math.toRadians(-140));
+    private final Pose pickup1ControlPose = new Pose(66, 65, Math.toRadians(-135));
+    private final Pose releasegatePose = new Pose(77.4, 50, Math.toRadians(0)); // Score Highest (First Set) of Artifacts from the Spike Mark.
+    private final Pose releasegateEnablePose = new Pose(108,50, Math.toRadians(0));
+    private final Pose pickup2Pose = new Pose(122,33,Math.toRadians(29)); // Score Highest (First Set) of Artifacts from the Spike Mark.
+    private final Pose pickup2scorePose = new Pose(83.4, 80.1, Math.toRadians(-140));
+    private final Pose pickup2ControlPose = new Pose(66, 65, Math.toRadians(-135));
 
-    private final Pose pickup3Pose = new Pose(58.38, 50, Math.toRadians(-180)); //89.51, 52.44
-
-    //private final Pose pickup3Pose = new Pose(58.99, 54.07, Math.toRadians(-180));
-    private final Pose pickup3grabPose = new Pose(20, 50, Math.toRadians(-180));
-    private final Pose pickup4Pose = new Pose(55.8, 83.57, Math.toRadians(-45)); // Score Middle (Second Set) of Artifacts from the Spike Mark.
-    private final Pose pickup4ControlPose = new Pose(61.4, 78.2, Math.toRadians(-45));//new Pose(70.26,31.54, Math.toRadians(-45));
-    //private final Pose pickup5Pose = new Pose(126.59, 84.19, Math.toRadians(0)); // Grab Lowest (Third Set) of Artifacts from the Spike Mark.
-    private final Pose pickup5Pose = new Pose(60.43, 74.67, Math.toRadians(-180));
-    private final Pose pickup5grabPose = new Pose(20, 74.67, Math.toRadians(-180)); //18.44, 77.02
-
-    //private final Pose pickup5ControlPose = new Pose(41.17, 91.56, Math.toRadians(0));
-//129.87, 85.21
-    private final Pose pickup6Pose = new Pose(55.8, 83.57, Math.toRadians(-45)); // Score Lowest (Third Set) of Artifacts from the Spike Mark.
-    private final Pose pickup6ControlPose = new Pose(61.4, 78.2, Math.toRadians(-45));
-    private final Pose landingPose = new Pose(47.7, 64.6, Math.toRadians(-45)); // Landing Pose of our robot. It is facing the goal at a 135 degree angle.
-    //private Path scorePreload;
-    private PathChain scorePreload,grabPickup1, scorePickup1, grabPickup2, scorePickup2, grabPickup3, scorePickup3, landingPath;
-
+    private final Pose releasegatetwicePose = new Pose(77.4, 50, Math.toRadians(0)); // Score Highest (First Set) of Artifacts from the Spike Mark.
+    private final Pose releasegatetwiceEnablePose = new Pose(108,50, Math.toRadians(0));
+    private final Pose pickup3Pose = new Pose(122,33,Math.toRadians(29)); // Score Highest (First Set) of Artifacts from the Spike Mark.
+    private final Pose pickup3scorePose = new Pose(83.4, 80.1, Math.toRadians(-140));
+    private final Pose pickup3ControlPose = new Pose(66, 65, Math.toRadians(-135));
+    private final Pose pickup4Pose =new Pose(82.75,72, Math.toRadians(0)); // Grab Highest (First Set) of Artifacts from the Spike Mark.
+    private final Pose pickup4grabPose = new Pose(110, 72, Math.toRadians(0));
+     private final Pose pickup4scorePose = new Pose(82.4, 86.7, Math.toRadians(-142)); // Landing Pose of our robot. It is facing the goal at a 135 degree angle.
+    private Path scorePreload;
+    private PathChain grabPickup1, scorePickup1, grabPickup2, scorePickup2, grabPickup3, scorePickup3, grabPickup4, scorePickup4;
 
     // -------- Mechanisms --------
-    private DcMotorEx flywheelMotor;      // velocity control
-    private DcMotorEx flywheelMotor1;      // velocity control
-    private DcMotor rollerIntakeMotor;
+    private DcMotorEx flywheelMotor, flywheelMotor1;      // velocity control
+    private DcMotor rollerIntakeMotor,rollerIntakeMotor2;
     private CRServo shootrollerServo;   // feeder (CR)
-    private Servo shootServo,hardstopServo;        // hood (positional)
-    //private Limelight3A limelight;
-    // hood (positional)
+    private Servo shootServo,hardstopServo;         // hood (positional)
 
     // -------- Hood mapping + presets (tune these) --------
     private static final double MIN_POS = 0;
     private static final double MAX_POS = 1;
     private static final double HOOD_MIN_DEG = 0.0;
-    private static final double HOOD_MAX_DEG = 40;
+    private static final double HOOD_MAX_DEG = 40.0;//40.0;
 
-    private double PRESET_HIGH_DEG = 35;
+    private double PRESET_HIGH_DEG = 40;//37
 
     // -------- Flywheel velocity control --------
     private static final double TICKS_PER_REV = 28.0;  // from your motor specs
     private static final double GEAR_RATIO    = 1.0;   // motor revs per flywheel rev
 
     // RPM targets
-    private static final double TARGET_RPM    = 3500;//4500;//4500.0; // as requested
+    private static final double TARGET_RPM    = 3300;//3600; as requested
 
+    private double lastAppliedTPS;
+    private static final double FW_kP=310,FW_kI=0.0,FW_kD=0.0;
     // Feeding thresholds (hysteresis)
     private static final double RESUME_RPM_FRAC = 0.85; // resume feed at >= 85% of target
     private static final double PAUSE_RPM_FRAC  = 0.80; // pause feed if < 80% of target
@@ -133,14 +125,11 @@ public class EIABlueWallNudgeAuto extends OpMode {
     private static final double TARGET_TPS = rpmToTicksPerSec(TARGET_RPM);
     private static final double RESUME_TPS = rpmToTicksPerSec(TARGET_RPM * RESUME_RPM_FRAC);
     private static final double PAUSE_TPS  = rpmToTicksPerSec(TARGET_RPM * PAUSE_RPM_FRAC);
-    private double lastAppliedTPS;
 
     // -------- Intake/feeder powers --------
     private static final double INTAKE_POWER = 1.0, INTAKE_POWER_PPG=0.8;
     private static final double FEED_FORWARD = -1.0; // forward
     private static final double FEED_REVERSE = +1.0; // reverse
-
-    private static final double FW_kP=8.5,FW_kI=0.0,FW_kD=0.0;
 
     // State: feeding allowed while RT is held
     private boolean feedEnabled = false;
@@ -161,32 +150,29 @@ public class EIABlueWallNudgeAuto extends OpMode {
         flywheelMotor.setVelocity(0.0);
         flywheelMotor1.setVelocity(0.0);
         rollerIntakeMotor.setPower(INTAKE_POWER_PPG);
+        rollerIntakeMotor2.setPower(INTAKE_POWER_PPG);
         shootrollerServo.setPower(FEED_REVERSE);
         hardstopServo.setPosition(0.55);
 
-        if(pathTimer.getElapsedTimeSeconds() > 3.45 && pathState==-2){
+        if(pathTimer.getElapsedTimeSeconds() > 2.55 && pathState==-2){
             setPathState(3);
         }
-        if(pathTimer.getElapsedTimeSeconds() > 2.65 && pathState==-4){
+        if(pathTimer.getElapsedTimeSeconds() > 4.20 && pathState==-4){
             setPathState(6);
         }
-        if(pathTimer.getElapsedTimeSeconds() > 2.65 && pathState==-7){
+        if(pathTimer.getElapsedTimeSeconds() > 4.20 && pathState==-7){
             setPathState(9);
+        }
+        if(pathTimer.getElapsedTimeSeconds() > 1.90 && pathState==-10){
+            setPathState(12);
         }
     }
     public void enableShooter() {
-
-        telemetry.addData("Shooter position",degToPos(PRESET_HIGH_DEG));
-        telemetry.update();
         shootServo.setPosition(degToPos(PRESET_HIGH_DEG));
-
-        // Command target velocity
         hardstopServo.setPosition(0.15);
-        // Measure current speed
+
         double tps = Math.abs(flywheelMotor.getVelocity());
 
-        telemetry.addData("Flywheel Velocity",tps);
-        telemetry.update();
         // Hysteresis:
         // - If currently NOT feeding, enable once we cross RESUME_TPS.
         // - If currently feeding, pause if we dip below PAUSE_TPS.
@@ -197,93 +183,100 @@ public class EIABlueWallNudgeAuto extends OpMode {
         }
         if (feedEnabled) {
             rollerIntakeMotor.setPower(INTAKE_POWER);
+            rollerIntakeMotor2.setPower(INTAKE_POWER);
             shootrollerServo.setPower(FEED_FORWARD);
         } else {
             rollerIntakeMotor.setPower(0.0);
+            rollerIntakeMotor2.setPower(0.0);
             shootrollerServo.setPower(0.0);
         }
 
-        if(pathTimer.getElapsedTimeSeconds() > 2.25 && pathState ==-1) {
+        if(pathTimer.getElapsedTimeSeconds() > 1.45 && pathState ==-1) {
             setPathState(2);
             feedEnabled = false;
         }
-        if(pathTimer.getElapsedTimeSeconds() > 2.25 && pathState ==-3) {
+        if(pathTimer.getElapsedTimeSeconds() > 1.45 && pathState ==-3) {
             setPathState(5);
             feedEnabled = false;
         }
-        if(pathTimer.getElapsedTimeSeconds() > 2.25 && pathState ==-6) {
+        if(pathTimer.getElapsedTimeSeconds() > 1.45 && pathState ==-6) {
             setPathState(8);
             feedEnabled = false;
         }
-        if(pathTimer.getElapsedTimeSeconds() > 2.25 && pathState ==-9) {
+        if(pathTimer.getElapsedTimeSeconds() > 1.45 && pathState ==-9) {
             setPathState(11);
+            feedEnabled = false;
+        }
+        if(pathTimer.getElapsedTimeSeconds() > 1.45 && pathState ==-14) {
+            setPathState(15);
             feedEnabled = false;
         }
         telemetry.addData("Enable Shooter Elapsed Time: ", pathTimer.getElapsedTimeSeconds());
         telemetry.update();
     }
     public void buildPaths() {
-
-        scorePreload =  follower.pathBuilder()
-                        .addPath(new BezierLine(startPose,  nudgePose))
-                        .setLinearHeadingInterpolation(startPose.getHeading(), nudgePose.getHeading())
-                        .addPath(new BezierLine(nudgePose,  scorePose1))
-                        .setConstantHeadingInterpolation(scorePose1.getHeading())
-                        .addPath(new BezierCurve(scorePose1,  scoreControlPose, scorePose))
-                        .setLinearHeadingInterpolation(scorePose1.getHeading(), scorePose.getHeading())
-                        //.addPath(new BezierLine(scorePose1,  scorePose))
-                        //.setConstantHeadingInterpolation(scorePose.getHeading())
-                        .build();
+        /* This is our scorePreload path. We are using a BezierLine, which is a straight line. */
+        scorePreload = new Path(new BezierLine(startPose, scorePose));
+        scorePreload.setLinearHeadingInterpolation(startPose.getHeading(), scorePose.getHeading());
 
         /* This is our grabPickup1 PathChain. We are using a single path with a BezierLine, which is a straight line. */
         grabPickup1 = follower.pathBuilder()
                 .addPath(new BezierLine(scorePose,  pickup1Pose))
-                .setConstantHeadingInterpolation(Math.toRadians(-180))
+                .setConstantHeadingInterpolation(Math.toRadians(0))
                 .addPath(new BezierLine(pickup1Pose,  pickup1grabPose))
-                .setConstantHeadingInterpolation(Math.toRadians(-180))
+                .setConstantHeadingInterpolation(Math.toRadians(0))
                 .build();
 
-        /* This is our scorePickup1 PathChain. We are using a single path with a BezierLine, which is a straight line. */
         scorePickup1 = follower.pathBuilder()
-                .addPath(new BezierCurve(pickup1Pose,  pickup2ControlPose, pickup2Pose))
-                .setLinearHeadingInterpolation(pickup1Pose.getHeading(), pickup2Pose.getHeading())
+                .addPath(new BezierCurve(pickup1grabPose,  pickup1ControlPose, pickup1scorePose))
+                .setLinearHeadingInterpolation(pickup1grabPose.getHeading(), pickup1scorePose.getHeading())
                 .build();
 
         /* This is our grabPickup2 PathChain. We are using a single path with a BezierLine, which is a straight line. */
         grabPickup2 = follower.pathBuilder()
-                .addPath(new BezierLine(pickup2Pose,  pickup3Pose))
-                .setConstantHeadingInterpolation(Math.toRadians(-180))
-                .addPath(new BezierLine(pickup3Pose,  pickup3grabPose))
-                .setConstantHeadingInterpolation(Math.toRadians(-180))
+                .addPath(new BezierLine(pickup1scorePose,  releasegatePose))
+                .setConstantHeadingInterpolation(Math.toRadians(0))
+                .addPath(new BezierLine(releasegatePose,  releasegateEnablePose))
+                .setConstantHeadingInterpolation(Math.toRadians(0))
+                .addPath(new BezierLine(releasegateEnablePose,  pickup2Pose))
+                .setLinearHeadingInterpolation(releasegateEnablePose.getHeading(), pickup2Pose.getHeading())
                 .build();
 
         /* This is our scorePickup2 PathChain. We are using a single path with a BezierLine, which is a straight line. */
         scorePickup2 = follower.pathBuilder()
-                .addPath(new BezierCurve(pickup3Pose,  pickup4ControlPose, pickup4Pose))
-                .setLinearHeadingInterpolation(pickup3Pose.getHeading(), pickup4Pose.getHeading())
+                .addPath(new BezierCurve(pickup2Pose,  pickup2ControlPose, pickup2scorePose))
+                .setLinearHeadingInterpolation(pickup2Pose.getHeading(), pickup2scorePose.getHeading())
                 .build();
-
-        /* This is our grabPickup3 PathChain. We are using a single path with a BezierLine, which is a straight line. */
+        /* This is our grabPickup2 PathChain. We are using a single path with a BezierLine, which is a straight line. */
         grabPickup3 = follower.pathBuilder()
-                .addPath(new BezierLine(pickup4Pose,  pickup5Pose))
-                .setConstantHeadingInterpolation(Math.toRadians(-180))
-                .addPath(new BezierLine(pickup5Pose,  pickup5grabPose))
-                .setConstantHeadingInterpolation(Math.toRadians(-180))
+                .addPath(new BezierLine(pickup2scorePose,  releasegatetwicePose))
+                .setConstantHeadingInterpolation(Math.toRadians(0))
+                .addPath(new BezierLine(releasegatetwicePose,  releasegatetwiceEnablePose))
+                .setConstantHeadingInterpolation(Math.toRadians(0))
+                .addPath(new BezierLine(releasegatetwiceEnablePose,  pickup3Pose))
+                .setConstantHeadingInterpolation(Math.toRadians(45))
                 .build();
 
-        /* This is our scorePickup3 PathChain. We are using a single path with a BezierLine, which is a straight line. */
+        /* This is our scorePickup2 PathChain. We are using a single path with a BezierLine, which is a straight line. */
         scorePickup3 = follower.pathBuilder()
-                .addPath(new BezierCurve(pickup5grabPose,  pickup6ControlPose, pickup6Pose))
-                .setLinearHeadingInterpolation(pickup5grabPose.getHeading(), pickup6Pose.getHeading())
+                .addPath(new BezierCurve(pickup3Pose,  pickup3ControlPose, pickup3scorePose))
+                .setLinearHeadingInterpolation(pickup3Pose.getHeading(), pickup3scorePose.getHeading())
                 .build();
-        landingPath = follower.pathBuilder()
-                .addPath(new Path(new BezierLine(pickup6Pose, landingPose)))
-                .setLinearHeadingInterpolation(pickup6Pose.getHeading(), landingPose.getHeading())
+
+        grabPickup4 = follower.pathBuilder()
+                .addPath(new Path(new BezierLine(pickup3scorePose, pickup4Pose)))
+                .setLinearHeadingInterpolation(pickup3scorePose.getHeading(), pickup4Pose.getHeading())
+                .addPath(new BezierLine(pickup4Pose,  pickup4grabPose))
+                .setLinearHeadingInterpolation(pickup4Pose.getHeading(), pickup4grabPose.getHeading())
+                .build();
+
+        scorePickup4 = follower.pathBuilder()
+                .addPath(new Path(new BezierLine(pickup4grabPose, pickup4scorePose)))
+                .setLinearHeadingInterpolation(pickup4grabPose.getHeading(), pickup4scorePose.getHeading())
                 .build();
     }
 
     public void autonomousPathUpdate(){
-        //if (follower.isBusy()) return;
         switch (pathState) {
             case 0:
                 follower.followPath(scorePreload);
@@ -299,8 +292,11 @@ public class EIABlueWallNudgeAuto extends OpMode {
             case 2:
                 /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
                 if(!follower.isBusy() ) {
+
+                    telemetry.addData("Inside first pickup",PRESET_HIGH_DEG);
+                    telemetry.update();
                     follower.followPath(grabPickup1,true);
-                    follower.setMaxPower(0.85);
+                    follower.setMaxPower(1.0);
                     /* Score Preload */
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
                     intakeArtifacts();
@@ -311,7 +307,6 @@ public class EIABlueWallNudgeAuto extends OpMode {
                 /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the pickup1Pose's position */
                 /* Grab Sample */
                 /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
-                rollerIntakeMotor.setPower(INTAKE_POWER_PPG);
                 follower.followPath(scorePickup1, true);
                 follower.setMaxPower(1.0);
                 setPathState(4);
@@ -328,7 +323,7 @@ public class EIABlueWallNudgeAuto extends OpMode {
                     /* Score Preload */
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
                     follower.followPath(grabPickup2,true);
-                    follower.setMaxPower(0.85);
+                    follower.setMaxPower(1.0);//0.9
                     intakeArtifacts();
                     setPathState(-4);
                 }
@@ -338,7 +333,6 @@ public class EIABlueWallNudgeAuto extends OpMode {
                 /* Grab Sample */
 
                 /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
-                //rollerIntakeMotor.setPower(INTAKE_POWER_PPG);
                 follower.followPath(scorePickup2, true);
                 follower.setMaxPower(1.0);
                 setPathState(7);
@@ -350,12 +344,13 @@ public class EIABlueWallNudgeAuto extends OpMode {
                 }
                 break;
             case 8:
+
                 /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
                 if(!follower.isBusy() ) {
                     /* Score Preload */
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
                     follower.followPath(grabPickup3,true);
-                    follower.setMaxPower(0.85);
+                    follower.setMaxPower(1.0);//0.85
                     intakeArtifacts();
                     setPathState(-7);
                 }
@@ -364,7 +359,6 @@ public class EIABlueWallNudgeAuto extends OpMode {
                 /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the pickup1Pose's position */
                 /* Grab Sample */
                 /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
-                //rollerIntakeMotor.setPower(INTAKE_POWER_PPG);
                 follower.followPath(scorePickup3, true);
                 follower.setMaxPower(1.0);
                 setPathState(10);
@@ -376,12 +370,36 @@ public class EIABlueWallNudgeAuto extends OpMode {
                 }
                 break;
             case 11:
+                if(!follower.isBusy() ) {
+                    /* Score Preload */
+                    /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
+                    follower.followPath(grabPickup4,true);
+                    follower.setMaxPower(1.0);//0.85
+                    intakeArtifacts();
+                    setPathState(-10);
+                }
+                break;
+            case 12:
+                /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the pickup1Pose's position */
+                /* Grab Sample */
+                /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
+                follower.followPath(scorePickup4, true);
+                follower.setMaxPower(1.0);
+                setPathState(13);
+                break;
+            case 13:
+                if(!follower.isBusy() ) {
+                    enableShooter();
+                    setPathState(-14);
+                }
+                break;
+            case 15:
                 flywheelMotor.setVelocity(0.0);
                 flywheelMotor1.setVelocity(0.0);
-                shootrollerServo.setPower(FEED_REVERSE);
-                follower.followPath(landingPath, true);
-                follower.setMaxPower(1.0);
-                setPathState(-11);
+                shootrollerServo.setPower(0.0);
+                rollerIntakeMotor.setPower(0.0);
+                rollerIntakeMotor2.setPower(0.0);
+                setPathState(-15);
                 break;
         }
     }
@@ -399,18 +417,17 @@ public class EIABlueWallNudgeAuto extends OpMode {
         // These loop the movements of the robot, these must be called continuously in order to work
         follower.update();
         if (TARGET_TPS > 1 && Math.abs(TARGET_TPS-lastAppliedTPS)>25){
-            double kF = 14.9;
+            double kF = 11;//14.9;
             PIDFCoefficients flywhlpidf = new PIDFCoefficients(FW_kP,FW_kI,FW_kD,kF);
             flywheelMotor.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER,flywhlpidf);
             lastAppliedTPS=TARGET_TPS;
         }
         flywheelMotor.setVelocity(TARGET_TPS);
-        double approxPower = Range.clip(TARGET_TPS / rpmToTicksPerSec(3500), 0,1);
+        double approxPower = Range.clip(TARGET_TPS / rpmToTicksPerSec(TARGET_RPM), 0,1);
         flywheelMotor1.setPower(approxPower);
-        if (pathState == -1 || pathState == -3 || pathState == -6 || pathState == -9) {
+        if (pathState == -1 || pathState == -3 || pathState == -6 || pathState == -9 || pathState == -14) {
             enableShooter();
-        }else if (pathState == -2 || pathState == -4 || pathState == -7){
-            //follower.setMaxPower(0.35);
+        }else if (pathState == -2 || pathState == -4 || pathState == -7 || pathState == -10){
             intakeArtifacts();
         }
         else {
@@ -439,22 +456,22 @@ public class EIABlueWallNudgeAuto extends OpMode {
         shootrollerServo = hardwareMap.crservo.get("shootrollexpservo2");
         flywheelMotor = hardwareMap.get(DcMotorEx.class, "Flywheelexp0");
         flywheelMotor1 = hardwareMap.get(DcMotorEx.class, "Flywheelexp2");
-        rollerIntakeMotor = hardwareMap.dcMotor.get("Rollerintakeexp1");
-
         flywheelMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         flywheelMotor1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
         flywheelMotor.setDirection(DcMotor.Direction.REVERSE);
         flywheelMotor1.setDirection(DcMotor.Direction.REVERSE);
-        rollerIntakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rollerIntakeMotor = hardwareMap.dcMotor.get("Rollerintakeexp1");
+        rollerIntakeMotor2 = hardwareMap.dcMotor.get("Rollerintakeexp2");
         hardstopServo    = hardwareMap.servo.get("hardstopServo");
         hardstopServo.setPosition(0.55);
-        /*limelight = hardwareMap.get(Limelight3A.class, "EIA Limelight");
-        limelight.pipelineSwitch(0);
-        limelight.start();*/
+
+        flywheelMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rollerIntakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rollerIntakeMotor2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rollerIntakeMotor2.setDirection(DcMotorSimple.Direction.REVERSE);
         buildPaths();
         follower.setStartingPose(startPose);
-        hardstopServo.setPosition(0.55);
-        //flywheelMotor.setVelocity(TARGET_TPS);
     }
 
     /** This method is called continuously after Init while waiting for "play". **/
@@ -468,6 +485,7 @@ public class EIABlueWallNudgeAuto extends OpMode {
     @Override
     public void start() {
         opmodeTimer.resetTimer();
+        shootServo.setPosition(degToPos(PRESET_HIGH_DEG));
         setPathState(0);
     }
 
@@ -476,6 +494,4 @@ public class EIABlueWallNudgeAuto extends OpMode {
     public void stop() {}
 
 }
-
-
 

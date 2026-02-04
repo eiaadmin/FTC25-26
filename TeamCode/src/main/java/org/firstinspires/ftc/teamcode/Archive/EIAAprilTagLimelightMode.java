@@ -17,6 +17,7 @@ designated function and call the function in whichever part of the pathbuilder i
 
 
 package org.firstinspires.ftc.teamcode.Archive;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -25,6 +26,7 @@ import com.qualcomm.robotcore.util.Range;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 @TeleOp(name="EIAAutoAlignByLimelight", group="Decode2526")
+@Disabled
 public class EIAAprilTagLimelightMode extends LinearOpMode {
     // -------- Drive Motors --------
     private DcMotor frontLeftMotor, backLeftMotor, frontRightMotor, backRightMotor;

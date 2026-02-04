@@ -1,8 +1,10 @@
 package org.firstinspires.ftc.teamcode.Archive;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
 @TeleOp(name = "HardstopServoController", group = "Testing")
+//@Disabled
 public class HardstopServoController extends LinearOpMode {
     private Servo hardstopServo;
     // === Customize These Positions ===

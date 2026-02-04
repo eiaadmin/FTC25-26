@@ -4,9 +4,12 @@ import com.qualcomm.hardware.limelightvision.LLResult;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 @TeleOp(name = "EIA_TeleOp_MT1_GlobalPose", group = "Vision")
+@Disabled
 public class EIA_TeleOp_MT1_GlobalPose extends OpMode {
     private Follower follower;
     private Limelight3A limelight;

@@ -1,8 +1,9 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.Archive;
 
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -24,11 +25,12 @@ import org.firstinspires.ftc.teamcode.Prism.PrismAnimations;
 
 
 @TeleOp(name="K_tele", group="Linear OpMode")
+@Disabled
 public class K_tele extends LinearOpMode {
 
     private DcMotor frontLeftMotor, backLeftMotor, frontRightMotor, backRightMotor;
     private DcMotorEx flywheelMotor, flywheelMotor2;
-    private DcMotor rollerIntakeMotor;
+    private DcMotor rollerIntakeMotor, rollerIntakeMotor2;
     private CRServo shootrollerServo;
     private Servo shootServo;
     private Servo hardstopServo;
@@ -56,7 +58,7 @@ public class K_tele extends LinearOpMode {
     private static final double PAUSE_RPM_FRAC_FAR  = 0.85;
 
 
-    private static final double INTAKE_POWER = 1.0;
+    private static final double INTAKE_POWER = .75;
     private static final double FEED_FORWARD = -1.0;
     private static final double FEED_REVERSE = +1.0;
 
@@ -137,6 +139,7 @@ public class K_tele extends LinearOpMode {
         flywheelMotor2   = hardwareMap.get(DcMotorEx.class, "Flywheelexp2");
 
         rollerIntakeMotor = hardwareMap.dcMotor.get("Rollerintakeexp1");
+        rollerIntakeMotor2 = hardwareMap.dcMotor.get("Rollerintakeexp2");
 
         limelight = hardwareMap.get(Limelight3A.class, "EIA Limelight");
         limelight.pipelineSwitch(0);
@@ -150,6 +153,8 @@ public class K_tele extends LinearOpMode {
         flywheelMotor2.setDirection(DcMotorSimple.Direction.REVERSE);
 
         rollerIntakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rollerIntakeMotor2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rollerIntakeMotor2.setDirection(DcMotorSimple.Direction.REVERSE);
 
         prism = hardwareMap.get(GoBildaPrismDriver.class, "prism");
         colorSense = hardwareMap.get(RevColorSensorV3.class, "colorsense");
@@ -327,9 +332,11 @@ public class K_tele extends LinearOpMode {
 
                 if (feedEnabled && tagSeen) {
                     rollerIntakeMotor.setPower(INTAKE_POWER);
+                    rollerIntakeMotor2.setPower(INTAKE_POWER);
                     shootrollerServo.setPower(FEED_FORWARD);
                 } else {
                     rollerIntakeMotor.setPower(0);
+                    rollerIntakeMotor2.setPower(0);
                     shootrollerServo.setPower(0);
                 }
 
@@ -343,6 +350,7 @@ public class K_tele extends LinearOpMode {
                 flywheelMotor2.setPower(approxPower);
 
                 rollerIntakeMotor.setPower(INTAKE_POWER);
+                rollerIntakeMotor2.setPower(INTAKE_POWER);
                 shootrollerServo.setPower(FEED_REVERSE);
 
             } else {
@@ -355,6 +363,7 @@ public class K_tele extends LinearOpMode {
                 flywheelMotor2.setPower(approxPower);
 
                 rollerIntakeMotor.setPower(0);
+                rollerIntakeMotor2.setPower(0);
                 shootrollerServo.setPower(0);
             }
 

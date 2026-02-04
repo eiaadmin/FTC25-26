@@ -62,45 +62,40 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@Autonomous(name = "EIARedWallNudgeAuto", group = "Decode2526")
+@Autonomous(name = "NudgeEIARedWallOriginalAuto", group = "Decode2526")
 //@Disabled
-public class EIARedWallNudgeAuto extends OpMode {
+public class NudgeEIARedWallOriginalAuto extends OpMode {
 
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
     private final ElapsedTime runtime = new ElapsedTime();
     private int pathState;
     private final Pose startPose = new Pose(79, 7.625,Math.toRadians(270)); // Start Pose of our robot.
-    private final Pose nudgePose = new Pose(100, 7.625,Math.toRadians(270));
-    private final Pose scorePose1 = new Pose(89, 17, Math.toRadians(245)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
-    private final Pose scorePose = new Pose(93.4, 83.57, Math.toRadians(-135));
+    private final Pose nudgePose = new Pose(90, 7.625,Math.toRadians(270));
+    private final Pose scorePose1 = new Pose(89, 17, Math.toRadians(245));
+    private final Pose scorePose = new Pose(88.4, 75.1, Math.toRadians(-135));//93.4, 83.57, Math.toRadians(-135));
     private final Pose scoreControlPose = new Pose(79.48, 45.06, Math.toRadians(-135));
-    private final Pose pickup1Pose = new Pose(79.5, 27,Math.toRadians(0)); // Grab Highest (First Set) of Artifacts from the Spike Mark.
-    //82.14, 27.86
-    private final Pose pickup1grabPose = new Pose(135, 27,Math.toRadians(0));//27.86
-    //123.3, 32.36
-    //private final Pose pickup1ControlPose = new Pose(62.88, 17.21, Math.toRadians(0));
-    private final Pose pickup2Pose = new Pose(93.4, 83.57, Math.toRadians(-135)); // Score Highest (First Set) of Artifacts from the Spike Mark.
-    private final Pose pickup2ControlPose = new Pose(79.48, 45.06, Math.toRadians(-135));
-    //private final Pose pickup3Pose = new Pose(131.10, 52.85, Math.toRadians(0)); // Grab Middle (Second Set) of Artifacts from the Spike Mark.
-    private final Pose pickup3Pose = new Pose(82.34, 52, Math.toRadians(0)); //80.91, 51.62
-    //private final Pose pickup3ControlPose = new Pose(34.41, 57.76, Math.toRadians(0));
-    private final Pose pickup3grabPose = new Pose(135, 52, Math.toRadians(0));//53.67
-    private final Pose pickup4Pose = new Pose(93.4, 83.57, Math.toRadians(-135)); // Score Middle (Second Set) of Artifacts from the Spike Mark.
-    private final Pose pickup4ControlPose = new Pose(79.48, 45.06, Math.toRadians(-135));
-    //private final Pose pickup5Pose = new Pose(126.59, 84.19, Math.toRadians(0)); // Grab Lowest (Third Set) of Artifacts from the Spike Mark.
-    private final Pose pickup5Pose = new Pose(82.34,74.67, Math.toRadians(0));
-    private final Pose pickup5grabPose = new Pose(126.79, 74.67, Math.toRadians(0));
+    private final Pose pickup1Pose =new Pose(82.75,72, Math.toRadians(0)); // Grab Highest (First Set) of Artifacts from the Spike Mark.
+    private final Pose pickup1grabPose = new Pose(110, 72, Math.toRadians(0));
+    private final Pose releasegatePose = new Pose(102, 65, Math.toRadians(0)); // Score Highest (First Set) of Artifacts from the Spike Mark.
+    private final Pose releasegateEnablePose = new Pose(121,65, Math.toRadians(0));
+    private final Pose pickup2Pose = new Pose(83.4, 80.1, Math.toRadians(-140)); // Score Highest (First Set) of Artifacts from the Spike Mark.
+    private final Pose pickup2ControlPose = new Pose(66, 65, Math.toRadians(-135));
+    private final Pose pickup3Pose = new Pose(82.75, 46.5, Math.toRadians(0));
+    private final Pose pickup3grabPose = new Pose(120, 46.5, Math.toRadians(0));//53.67
+    private final Pose pickup4Pose = new Pose(83.4, 80.1, Math.toRadians(-140)); // Score Middle (Second Set) of Artifacts from the Spike Mark.
+    private final Pose pickup4ControlPose = new Pose(66, 65, Math.toRadians(-135));
+    private final Pose pickup5Pose = new Pose(79.5, 27,Math.toRadians(0));
+    private final Pose pickup5grabPose = new Pose(125.7, 27,Math.toRadians(0));
     //129.87, 85.21
-    private final Pose pickup6Pose = new Pose(93.4, 83.57, Math.toRadians(-135)); // Score Lowest (Third Set) of Artifacts from the Spike Mark.
-    private final Pose pickup6ControlPose = new Pose(79.48, 65.06, Math.toRadians(-135));
-    private final Pose landingPose = new Pose(92, 62, Math.toRadians(-139)); // Landing Pose of our robot. It is facing the goal at a 135 degree angle.
+    private final Pose pickup6Pose = new Pose(88.4, 75.1, Math.toRadians(-135));//93.4, 83.57, Math.toRadians(-135)); // Score Lowest (Third Set) of Artifacts from the Spike Mark.
+    private final Pose pickup6ControlPose = new Pose(79.48, 45.06, Math.toRadians(-135));
+    private final Pose landingPose = new Pose(100, 65, Math.toRadians(0));
     private PathChain scorePreload,grabPickup1, scorePickup1, grabPickup2, scorePickup2, grabPickup3, scorePickup3, landingPath;
-
 
     // -------- Mechanisms --------
     private DcMotorEx flywheelMotor, flywheelMotor1;      // velocity control
-    private DcMotor rollerIntakeMotor;
+    private DcMotor rollerIntakeMotor, rollerIntakeMotor2;
     private CRServo shootrollerServo;   // feeder (CR)
     private Servo shootServo,hardstopServo;         // hood (positional)
 
@@ -110,7 +105,7 @@ public class EIARedWallNudgeAuto extends OpMode {
     private static final double HOOD_MIN_DEG = 0.0;
     private static final double HOOD_MAX_DEG = 40.0;
 
-    private double PRESET_HIGH_DEG = 35.0;
+    private double PRESET_HIGH_DEG = 40;
 
     // -------- Flywheel velocity control --------
     private static final double TICKS_PER_REV = 28.0;  // from your motor specs
@@ -155,16 +150,17 @@ public class EIARedWallNudgeAuto extends OpMode {
         flywheelMotor.setVelocity(0.0);
         flywheelMotor1.setVelocity(0.0);
         rollerIntakeMotor.setPower(INTAKE_POWER_PPG);
+        rollerIntakeMotor2.setPower(INTAKE_POWER_PPG);
         shootrollerServo.setPower(FEED_REVERSE);
         hardstopServo.setPosition(0.55);
 
-        if(pathTimer.getElapsedTimeSeconds() > 3.55 && pathState==-2){
+        if(pathTimer.getElapsedTimeSeconds() > 3.85 && pathState==-2){
             setPathState(3);
         }
-        if(pathTimer.getElapsedTimeSeconds() > 3.0 && pathState==-4){
+        if(pathTimer.getElapsedTimeSeconds() > 3.45 && pathState==-4){
             setPathState(6);
         }
-        if(pathTimer.getElapsedTimeSeconds() >2.45 && pathState==-7){
+        if(pathTimer.getElapsedTimeSeconds() >3.65 && pathState==-7){
             setPathState(9);
         }
     }
@@ -185,9 +181,11 @@ public class EIARedWallNudgeAuto extends OpMode {
         }
         if (feedEnabled) {
             rollerIntakeMotor.setPower(INTAKE_POWER);
+            rollerIntakeMotor2.setPower(INTAKE_POWER);
             shootrollerServo.setPower(FEED_FORWARD);
         } else {
             rollerIntakeMotor.setPower(0.0);
+            rollerIntakeMotor2.setPower(0.0);
             shootrollerServo.setPower(0.0);
         }
 
@@ -218,32 +216,33 @@ public class EIARedWallNudgeAuto extends OpMode {
                 .setConstantHeadingInterpolation(scorePose1.getHeading())
                 .addPath(new BezierCurve(scorePose1,  scoreControlPose, scorePose))
                 .setLinearHeadingInterpolation(scorePose1.getHeading(), scorePose.getHeading())
-                //.addPath(new BezierLine(scorePose1,  scorePose))
-                //.setConstantHeadingInterpolation(scorePose.getHeading())
                 .build();
         /* This is our grabPickup1 PathChain. We are using a single path with a BezierLine, which is a straight line. */
         grabPickup1 = follower.pathBuilder()
                 .addPath(new BezierLine(scorePose,  pickup1Pose))
-                //.setLinearHeadingInterpolation(scorePose.getHeading(), pickup1Pose.getHeading())
                 .setConstantHeadingInterpolation(Math.toRadians(0))
                 .addPath(new BezierLine(pickup1Pose,  pickup1grabPose))
-                //.setLinearHeadingInterpolation(pickup1Pose.getHeading(), pickup1grabPose.getHeading())
+                .setConstantHeadingInterpolation(Math.toRadians(0))
+                .addPath(new BezierLine(pickup1grabPose,  releasegatePose))
+                .setConstantHeadingInterpolation(Math.toRadians(0))
+                .addPath(new BezierLine(releasegatePose,  releasegateEnablePose))
                 .setConstantHeadingInterpolation(Math.toRadians(0))
                 .build();
+
         /* This is our scorePickup1 PathChain. We are using a single path with a BezierLine, which is a straight line. */
         scorePickup1 = follower.pathBuilder()
-                .addPath(new BezierCurve(pickup1Pose,  pickup2ControlPose, pickup2Pose))
-                .setLinearHeadingInterpolation(pickup1Pose.getHeading(), pickup2Pose.getHeading())
+                .addPath(new BezierCurve(releasegateEnablePose,  pickup2ControlPose, pickup2Pose))
+                .setLinearHeadingInterpolation(releasegateEnablePose.getHeading(), pickup2Pose.getHeading())
                 .build();
+
         /* This is our grabPickup2 PathChain. We are using a single path with a BezierLine, which is a straight line. */
         grabPickup2 = follower.pathBuilder()
-                //.addPath(new BezierCurve(pickup2Pose,  pickup3ControlPose, pickup3Pose))
-                //.setLinearHeadingInterpolation(pickup2Pose.getHeading(), pickup3Pose.getHeading())
                 .addPath(new BezierLine(pickup2Pose,  pickup3Pose))
                 .setConstantHeadingInterpolation(Math.toRadians(0))
                 .addPath(new BezierLine(pickup3Pose,  pickup3grabPose))
                 .setConstantHeadingInterpolation(Math.toRadians(0))
                 .build();
+
         /* This is our scorePickup2 PathChain. We are using a single path with a BezierLine, which is a straight line. */
         scorePickup2 = follower.pathBuilder()
                 .addPath(new BezierCurve(pickup3Pose,  pickup4ControlPose, pickup4Pose))
@@ -270,6 +269,8 @@ public class EIARedWallNudgeAuto extends OpMode {
     public void autonomousPathUpdate(){
         switch (pathState) {
             case 0:
+                flywheelMotor.setVelocity(0.0);
+                flywheelMotor1.setVelocity(0.0);
                 follower.followPath(scorePreload);
                 follower.setMaxPower(1.0);
                 setPathState(1);
@@ -362,7 +363,9 @@ public class EIARedWallNudgeAuto extends OpMode {
             case 11:
                 flywheelMotor.setVelocity(0.0);
                 flywheelMotor1.setVelocity(0.0);
-                shootrollerServo.setPower(FEED_REVERSE);
+                shootrollerServo.setPower(0.0);
+                rollerIntakeMotor.setPower(0.0);
+                rollerIntakeMotor2.setPower(0.0);
                 follower.followPath(landingPath, true);
                 follower.setMaxPower(1.0);
                 setPathState(-11);
@@ -388,8 +391,9 @@ public class EIARedWallNudgeAuto extends OpMode {
             flywheelMotor.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER,flywhlpidf);
             lastAppliedTPS=TARGET_TPS;
         }
+
         flywheelMotor.setVelocity(TARGET_TPS);
-        double approxPower = Range.clip(TARGET_TPS / rpmToTicksPerSec(3500), 0,1);
+        double approxPower = Range.clip(TARGET_TPS / rpmToTicksPerSec(TARGET_RPM), 0,1);
         flywheelMotor1.setPower(approxPower);
         if (pathState == -1 || pathState == -3 || pathState == -6 || pathState == -9) {
             enableShooter();
@@ -428,11 +432,14 @@ public class EIARedWallNudgeAuto extends OpMode {
         flywheelMotor.setDirection(DcMotor.Direction.REVERSE);
         flywheelMotor1.setDirection(DcMotor.Direction.REVERSE);
         rollerIntakeMotor = hardwareMap.dcMotor.get("Rollerintakeexp1");
+        rollerIntakeMotor2 = hardwareMap.dcMotor.get("Rollerintakeexp2");
         hardstopServo    = hardwareMap.servo.get("hardstopServo");
         hardstopServo.setPosition(0.55);
 
         flywheelMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         rollerIntakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rollerIntakeMotor2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rollerIntakeMotor2.setDirection(DcMotor.Direction.REVERSE);
         buildPaths();
         follower.setStartingPose(startPose);
     }

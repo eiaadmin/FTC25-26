@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.Archive;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -10,6 +11,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 @TeleOp(name="RobotCentric_CombinedTriggers", group="Linear OpMode")
+@Disabled
 public class RobotCentric_CombinedTriggers extends LinearOpMode {
     // -------- Drive Motors --------
     private DcMotor frontLeftMotor, backLeftMotor, frontRightMotor, backRightMotor;

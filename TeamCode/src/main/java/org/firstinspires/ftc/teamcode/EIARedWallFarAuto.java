@@ -40,6 +40,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -65,20 +66,19 @@ public class EIARedWallFarAuto extends OpMode {
     private final Pose startPose = new Pose(79, 7.625,Math.toRadians(270)); // Start Pose of our robot.
     private final Pose scorePose = new Pose(89, 17, Math.toRadians(245));
     private final Pose pickup1Pose = new Pose(79.5, 27,Math.toRadians(0));
-    private final Pose pickup1grabPose = new Pose(130, 27,Math.toRadians(0));
+    private final Pose pickup1grabPose = new Pose(123, 27,Math.toRadians(0));
     private final Pose pickup1scorePose = new Pose(89, 17, Math.toRadians(245));
-    private final Pose pickup2Pose = new Pose(127, 8,Math.toRadians(0));
-    private final Pose pickup2grabPose = new Pose(115, .5,Math.toRadians(0));
-    private final Pose pickup2Pose2 = new Pose(127, 6,Math.toRadians(0));
-    private final Pose pickup2grabPose2 = new Pose(115, 1,Math.toRadians(0));
-    private final Pose pickup2Pose3 = new Pose(127, 4,Math.toRadians(0));
+    private final Pose pickup2Pose = new Pose(120, 15,Math.toRadians(0));
+    private final Pose pickup2grabPose = new Pose(118, 9,Math.toRadians(0));
+    private final Pose pickup2Pose2 = new Pose(123, 8,Math.toRadians(0));
+    private final Pose pickup2grabPose2 = new Pose(110, 6,Math.toRadians(0));
+    private final Pose pickup2Pose3 = new Pose(123, 4,Math.toRadians(0));
     private final Pose pickup2grabPose3 = new Pose(115,6 ,Math.toRadians(0));
-    private final Pose pickup2grabPose4 = new Pose(110, 18,Math.toRadians(0));
+    private final Pose pickup2grabPose4 = new Pose(123, -5,Math.toRadians(0));
+    private final Pose pickup3Pose = new Pose(110, 15,Math.toRadians(0));
     private final Pose scorePose2 = new Pose(89, 17, Math.toRadians(245));
-    private final Pose pickup3Pose = new Pose(127, 20,Math.toRadians(0));
-    private final Pose pickup3grabPose = new Pose(115, 12,Math.toRadians(0));
     private final Pose scorePose3 = new Pose(89, 17, Math.toRadians(245));
-    private final Pose leavePose = new Pose(100, 45,Math.toRadians(245));
+    private final Pose leavePose = new Pose(100, 25, Math.toRadians(0));
     private Path scorePreload;
     private PathChain grabPickup1, scorePickup1, grabPickup2, scorePickup2,landingPath,grabPickup3, scorePickup3;//, landingPath;
 
@@ -86,7 +86,7 @@ public class EIARedWallFarAuto extends OpMode {
     // -------- Mechanisms --------
     private DcMotorEx flywheelMotor;      // velocity control
     private DcMotorEx flywheelMotor1;      // velocity control
-    private DcMotor rollerIntakeMotor;
+    private DcMotor rollerIntakeMotor,rollerIntakeMotor2;
     private CRServo shootrollerServo;   // feeder (CR)
     private Servo shootServo,hardstopServo;        // hood (positional)
     //private Limelight3A limelight;
@@ -144,18 +144,16 @@ public class EIARedWallFarAuto extends OpMode {
         flywheelMotor.setVelocity(0.0);
         flywheelMotor1.setVelocity(0.0);
         rollerIntakeMotor.setPower(INTAKE_POWER_PPG);
+        rollerIntakeMotor2.setPower(INTAKE_POWER_PPG);
         shootrollerServo.setPower(FEED_REVERSE);
         hardstopServo.setPosition(0.55);
 
-        if(pathTimer.getElapsedTimeSeconds() > 2.75 && pathState==-2){
+        if(pathTimer.getElapsedTimeSeconds() > 2.35 && pathState==-2){
             setPathState(3);
         }
         if(pathTimer.getElapsedTimeSeconds() > 2.65 && pathState==-4){
             setPathState(6);
         }
-        /*if(pathTimer.getElapsedTimeSeconds() > 2.65 && pathState==-8){
-            setPathState(9);
-        }*/
 
     }
     public void enableShooter() {
@@ -181,9 +179,11 @@ public class EIARedWallFarAuto extends OpMode {
         }
         if (feedEnabled) {
             rollerIntakeMotor.setPower(INTAKE_POWER);
+            rollerIntakeMotor2.setPower(INTAKE_POWER);
             shootrollerServo.setPower(FEED_FORWARD);
         } else {
             rollerIntakeMotor.setPower(0.0);
+            rollerIntakeMotor2.setPower(0.0);
             shootrollerServo.setPower(0.0);
         }
         if(pathTimer.getElapsedTimeSeconds() > 3.05 && pathState ==-1) {
@@ -239,27 +239,18 @@ public class EIARedWallFarAuto extends OpMode {
                 .setConstantHeadingInterpolation(Math.toRadians(0))
                 .addPath(new BezierLine(pickup2grabPose3,  pickup2grabPose4))
                 .setConstantHeadingInterpolation(Math.toRadians(0))
+                .addPath(new BezierLine(pickup2grabPose4,  pickup3Pose))
+                .setConstantHeadingInterpolation(Math.toRadians(0))
                 .build();
 
         scorePickup2 = follower.pathBuilder()
-                .addPath(new BezierLine(pickup2Pose3,  scorePose2))
+                .addPath(new BezierLine(pickup3Pose,  scorePose2))
                 .setConstantHeadingInterpolation(Math.toRadians(245))
                 .build();
-        /*grabPickup3 = follower.pathBuilder()
-                .addPath(new BezierLine(scorePose2,  pickup3Pose))
-                .setConstantHeadingInterpolation(Math.toRadians(0))
-                .addPath(new BezierLine(pickup3Pose,  pickup3grabPose))
-                .setConstantHeadingInterpolation(Math.toRadians(0))
-                .build();
-
-        scorePickup3 = follower.pathBuilder()
-                .addPath(new BezierLine(pickup3Pose,  scorePose3))
-                .setConstantHeadingInterpolation(Math.toRadians(245))
-                .build();*/
 
         landingPath = follower.pathBuilder()
-                .addPath(new BezierLine(scorePose3,  leavePose))
-                .setConstantHeadingInterpolation(Math.toRadians(245))
+                .addPath(new BezierLine(scorePose2,  leavePose))
+                .setConstantHeadingInterpolation(Math.toRadians(0))
                 .build();
     }
 
@@ -284,6 +275,7 @@ public class EIARedWallFarAuto extends OpMode {
                 break;
             case 3:
                 rollerIntakeMotor.setPower(INTAKE_POWER_PPG);
+                rollerIntakeMotor2.setPower(INTAKE_POWER_PPG);
                 follower.followPath(scorePickup1, true);
                 follower.setMaxPower(1.0);
                 setPathState(4);
@@ -323,12 +315,16 @@ public class EIARedWallFarAuto extends OpMode {
                 setPathState(-9);
                 break;
             case 11:*/
-                flywheelMotor.setVelocity(0.0);
-                flywheelMotor1.setVelocity(0.0);
-                shootrollerServo.setPower(FEED_REVERSE);
                 follower.followPath(landingPath, true);
                 follower.setMaxPower(1.0);
                 setPathState(-11);
+                break;
+            case -11:
+                flywheelMotor.setVelocity(0.0);
+                flywheelMotor1.setVelocity(0.0);
+                shootrollerServo.setPower(0.0);
+                rollerIntakeMotor.setPower(0.0);
+                rollerIntakeMotor2.setPower(0.0);
                 break;
         }
     }
@@ -388,12 +384,15 @@ public class EIARedWallFarAuto extends OpMode {
         flywheelMotor = hardwareMap.get(DcMotorEx.class, "Flywheelexp0");
         flywheelMotor1 = hardwareMap.get(DcMotorEx.class, "Flywheelexp2");
         rollerIntakeMotor = hardwareMap.dcMotor.get("Rollerintakeexp1");
+        rollerIntakeMotor2 = hardwareMap.dcMotor.get("Rollerintakeexp2");
 
         flywheelMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         flywheelMotor1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         flywheelMotor.setDirection(DcMotor.Direction.REVERSE);
         flywheelMotor1.setDirection(DcMotor.Direction.REVERSE);
         rollerIntakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rollerIntakeMotor2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rollerIntakeMotor2.setDirection(DcMotorSimple.Direction.REVERSE);
         hardstopServo    = hardwareMap.servo.get("hardstopServo");
         hardstopServo.setPosition(0.55);
 
@@ -414,7 +413,7 @@ public class EIARedWallFarAuto extends OpMode {
     @Override
     public void start() {
         opmodeTimer.resetTimer();
-        //flywheelMotor.setVelocity(TARGET_TPS);
+        shootServo.setPosition(degToPos(PRESET_HIGH_DEG));
         setPathState(0);
     }
 

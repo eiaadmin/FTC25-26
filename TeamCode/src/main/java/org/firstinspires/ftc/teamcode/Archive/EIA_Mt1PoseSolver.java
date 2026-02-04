@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode.Archive;
 import com.pedropathing.geometry.Pose;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+
+@Disabled
 public class EIA_Mt1PoseSolver {
     // Camera transform (meters)
     private static final double CAM_X = 0.11693;   // right positive

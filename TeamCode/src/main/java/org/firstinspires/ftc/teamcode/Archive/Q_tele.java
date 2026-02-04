@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.Archive;
 
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.limelightvision.LLResult;
+import com.qualcomm.hardware.rev.RevColorSensorV3;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -12,13 +14,23 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
+import com.seattlesolvers.solverslib.util.InterpLUT;
 
-@TeleOp(name="Q_teleop", group="Linear OpMode")
+
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.teamcode.Prism.Color;
+import org.firstinspires.ftc.teamcode.Prism.GoBildaPrismDriver;
+import org.firstinspires.ftc.teamcode.Prism.PrismAnimations;
+
+
+
+@TeleOp(name="Q_tele", group="Linear OpMode")
+@Disabled
 public class Q_tele extends LinearOpMode {
 
     private DcMotor frontLeftMotor, backLeftMotor, frontRightMotor, backRightMotor;
     private DcMotorEx flywheelMotor, flywheelMotor2;
-    private DcMotor rollerIntakeMotor;
+    private DcMotor rollerIntakeMotor, rollerIntakeMotor2;
     private CRServo shootrollerServo;
     private Servo shootServo;
     private Servo hardstopServo;
@@ -37,10 +49,16 @@ public class Q_tele extends LinearOpMode {
     private static final double GEAR_RATIO    = 1.0;
     private static final double MAX_RPM       = 4500.0;
 
-    private static final double RESUME_RPM_FRAC = 0.85;
-    private static final double PAUSE_RPM_FRAC  = 0.80;
+    private static final double IDLE_RPM       = 2500;
 
-    private static final double INTAKE_POWER = 1.0;
+    private static final double RESUME_RPM_FRAC = 0.75;
+    private static final double PAUSE_RPM_FRAC  = 0.70;
+
+    private static final double RESUME_RPM_FRAC_FAR = 0.90;
+    private static final double PAUSE_RPM_FRAC_FAR  = 0.85;
+
+
+    private static final double INTAKE_POWER = .75;
     private static final double FEED_FORWARD = -1.0;
     private static final double FEED_REVERSE = +1.0;
 
@@ -67,26 +85,41 @@ public class Q_tele extends LinearOpMode {
     private boolean feedEnabled = false;
     private boolean manualOverride = false;
 
-    private static final double DIST_A = 768.0;
-    private static final double DIST_B = 10.06;
-
-    private static final double HOOD_m = 0.30137;
-    private static final double HOOD_b = 11.44;
-
-    private static final double RPM_m = 27.40;
-    private static final double RPM_b = 2267.0;
+    // ===== SolversLib InterpLUTs: Ty -> RPM and Ty -> HoodAngle(deg) =====
+    private final InterpLUT tyToRPM = new InterpLUT();
+    private final InterpLUT tyToHoodDeg = new InterpLUT();
 
     // PIDF update hygiene (RT mode only)
     private double lastAppliedTPS = -1;
 
-    // ---- Animations ----
+    // ---- Sensor ----
+    private GoBildaPrismDriver prism;
 
-    // Tune this threshold for your mounting distance
-    // If the sensor reads <= this many mm, we consider "object detected"
+    // ---- Sensor ----
+    private RevColorSensorV3 colorSense;
+
+    // ---- Animations ----
+    private final PrismAnimations.Solid solidGreen = new PrismAnimations.Solid(Color.GREEN);
+    private final PrismAnimations.Solid solidBlue  = new PrismAnimations.Solid(Color.BLUE);
+
+
     private static final double PROX_THRESHOLD_MM = 75.0;
+
+    // =========================================================
+    // RPM DIP COMPENSATION (hood trim based on RPM droop)
+    // =========================================================
+    private static final double RPM_FILTER_ALPHA = 0.20;       // 0.10..0.30
+    private static final double RPM_DEADBAND     = 75.0;       // ignore small error/noise
+    private static final double HOOD_COMP_DEG_PER_RPM = 0.00070; // start ~0.0010
+    private static final double HOOD_COMP_MAX_DEG     = 2.0;    // limit trim
+
+    private double filteredRPM = 0.0;
 
     @Override
     public void runOpMode() {
+
+        // ===== Build LUTs (Ty -> RPM / Hood) =====
+        initTyLUTs();
 
         frontLeftMotor  = hardwareMap.dcMotor.get("Flch3");
         backLeftMotor   = hardwareMap.dcMotor.get("Blch2");
@@ -106,6 +139,7 @@ public class Q_tele extends LinearOpMode {
         flywheelMotor2   = hardwareMap.get(DcMotorEx.class, "Flywheelexp2");
 
         rollerIntakeMotor = hardwareMap.dcMotor.get("Rollerintakeexp1");
+        rollerIntakeMotor2 = hardwareMap.dcMotor.get("Rollerintakeexp2");
 
         limelight = hardwareMap.get(Limelight3A.class, "EIA Limelight");
         limelight.pipelineSwitch(0);
@@ -119,18 +153,33 @@ public class Q_tele extends LinearOpMode {
         flywheelMotor2.setDirection(DcMotorSimple.Direction.REVERSE);
 
         rollerIntakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rollerIntakeMotor2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rollerIntakeMotor2.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        shootServo.setPosition(0.5);
+        prism = hardwareMap.get(GoBildaPrismDriver.class, "prism");
+        colorSense = hardwareMap.get(RevColorSensorV3.class, "colorsense");
+
+        // Prism strip length (0..119 = 120 LEDs)
+        prism.setStripLength(120);
+
+        // Configure GREEN (full strip)
+        solidGreen.setBrightness(100);
+        solidGreen.setStartIndex(0);
+        solidGreen.setStopIndex(119);
+
+        // Configure BLUE (full strip)
+        solidBlue.setBrightness(100);
+        solidBlue.setStartIndex(0);
+        solidBlue.setStopIndex(119);
+
+        //shootServo.setPosition(0.5);
 
         telemetry.addLine("READY");
         telemetry.update();
 
-
-
         waitForStart();
         resetRuntime();
 
-        // Track last state so we only update LEDs when it changes
         boolean lastObjectDetected = false;
         boolean firstUpdate = true;
 
@@ -151,14 +200,12 @@ public class Q_tele extends LinearOpMode {
             boolean lt = gamepad1.left_trigger  > 0.1;
             boolean rt = gamepad1.right_trigger > 0.1;
 
-            // NEW: DPAD UP MODE (open-loop, no PIDF/velocity loop)
             boolean dpadUpOpenLoop4500 = gamepad1.dpad_up;
 
             // HARDSTOP
             if (rt) hardstopServo.setPosition(0.15);
             else    hardstopServo.setPosition(0.55);
 
-            // LIMELIGHT
             LLResult ll = limelight.getLatestResult();
             boolean tagSeen = (ll != null && ll.isValid());
 
@@ -166,207 +213,188 @@ public class Q_tele extends LinearOpMode {
             double autoHoodDeg = 0, autoRPM = 0;
             double turnCmd = 0;
 
-
-
             manualOverride =
                     gamepad2.dpad_up ||
                             gamepad2.dpad_left ||
                             gamepad2.dpad_down;
 
-            // =========================================================
-            // DPAD UP MODE:
-            // - Flywheel open-loop (no PIDF, no setVelocity)
-            // - Hood uses LL hood angle (if tag seen)
-            // - Aiming uses tx PID (if tag seen)
-            // =========================================================
-            if (dpadUpOpenLoop4500) {
+            // ==========================
+            // AUTO SHOOTING (RT + tag)
+            // SolversLib InterpLUT (NO TY CLAMPING)
+            // + RPM dip -> hood compensation
+            // ==========================
+            if (rt && tagSeen) {
 
-                autoRPM = 4500; // target display only
+                if ( ll.getTy() < -1 ) {
+                    tx = ll.getTx() - 1.8;
+                }
+                if ( ll.getTy() >= 0 ){
+                    tx = ll.getTx() - 1.5;
+                }
+                ty = ll.getTy();
 
-                if (tagSeen) {
-                    tx = ll.getTx();
-                    ty = ll.getTy();
+                if (!manualOverride) {
 
-                    double dist = DIST_A / (ty + DIST_B);
+                    autoHoodDeg = tyToHoodDeg.get(ty);
+                    autoRPM     = tyToRPM.get(ty);
 
-                    autoHoodDeg = HOOD_m * dist + HOOD_b;
+                    // ---- RPM droop compensation (adds hood angle when RPM dips) ----
+                    // actual RPM from motor1 encoder
+                    double curTPS_signed_local = flywheelMotor.getVelocity();
+                    double curTPS_abs_local = Math.abs(curTPS_signed_local);
+                    double actualRPM_local = (curTPS_abs_local / (TICKS_PER_REV * GEAR_RATIO)) * 60.0;
 
-                    // keep your same ty trims
-                    if (ty > 0) autoHoodDeg -= 5;
-                    if (ty < 0) autoHoodDeg -= 5;
+                    // low-pass filter RPM to avoid jitter
+                    if (filteredRPM <= 1.0) filteredRPM = actualRPM_local; // init
+                    filteredRPM = (1.0 - RPM_FILTER_ALPHA) * filteredRPM + RPM_FILTER_ALPHA * actualRPM_local;
+
+                    // positive when wheel is below target
+                    double rpmError = autoRPM - filteredRPM;
+
+                    // deadband
+                    if (rpmError < RPM_DEADBAND) rpmError = 0.0;
+
+                    // convert to hood degrees (+)
+                    double hoodComp = rpmError * HOOD_COMP_DEG_PER_RPM;
+                    hoodComp = Range.clip(hoodComp, 0.0, HOOD_COMP_MAX_DEG);
+
+                    autoHoodDeg += hoodComp;
+                    // --------------------------------------------------------------
 
                     autoHoodDeg = Range.clip(autoHoodDeg, 0, 40);
                     shootServo.setPosition(degToPos(autoHoodDeg));
 
-                    // keep aiming
-                    turnCmd = pidTurnFromTx(tx);
-
-                    double denom = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(turnCmd), 1.0);
-                    frontLeftMotor.setPower((y + x + turnCmd) / denom);
-                    backLeftMotor.setPower( (y - x + turnCmd) / denom);
-                    frontRightMotor.setPower((y - x - turnCmd) / denom);
-                    backRightMotor.setPower( (y + x - turnCmd) / denom);
+                    autoRPM = Math.min(autoRPM, MAX_RPM);
 
                 } else {
-                    // no tag -> normal drive
-                    resetPid();
-                    double denom = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1.0);
-                    frontLeftMotor.setPower((y + x + rx) / denom);
-                    backLeftMotor.setPower( (y - x + rx) / denom);
-                    frontRightMotor.setPower((y - x - rx) / denom);
-                    backRightMotor.setPower( (y + x - rx) / denom);
+
+                    autoRPM = 4500;
+
+                    if (gamepad2.dpad_up)         autoHoodDeg = PRESET_HIGH_DEG;
+                    else if (gamepad2.dpad_left) autoHoodDeg = PRESET_MID_DEG;
+                    else if (gamepad2.dpad_down) autoHoodDeg = PRESET_LOW_DEG;
+
+                    shootServo.setPosition(degToPos(autoHoodDeg));
                 }
 
-                // OPEN LOOP SPIN (NO PIDF / NO setVelocity)
-                flywheelMotor.setPower(1.0);
-                flywheelMotor2.setPower(1.0);
+                targetTPS = rpmToTicksPerSec(autoRPM);
 
-                // Do NOT feed in DPAD UP mode (keeps your feeder safe)
-                feedEnabled = false;
-                rollerIntakeMotor.setPower(0);
-                shootrollerServo.setPower(0);
+                turnCmd = pidTurnFromTx(tx);
 
-                // Telemetry (targetTPS not used in this mode)
-                targetTPS = 0;
+                double denom = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(turnCmd), 1.0);
+                frontLeftMotor.setPower((y + x + turnCmd) / denom);
+                backLeftMotor.setPower( (y - x + turnCmd) / denom);
+                frontRightMotor.setPower((y - x - turnCmd) / denom);
+                backRightMotor.setPower( (y + x - turnCmd) / denom);
 
             } else {
-                // ==========================
-                // Existing AUTO SHOOTING (RT + tag)
-                // ==========================
-                if (rt && tagSeen) {
+                resetPid();
 
-                    if ( ll.getTx() < 0 ) {
-                        tx = ll.getTx() - 2.5;
-                    }
-                    if ( ll.getTx() >= 0 ){
-                        tx = ll.getTx() - 1;
-                    }
-                    ty = ll.getTy();
-
-                    double dist = DIST_A / (ty + DIST_B);
-
-                    if (!manualOverride) {
-
-                        autoHoodDeg = HOOD_m * dist + HOOD_b;
-                        autoRPM     = RPM_m * dist + RPM_b;
-
-                        if (ty >= 0) {
-                            autoRPM     += 125;
-                            autoHoodDeg -= 3;
-                        }
-                        if (ty < 0) {
-                            autoRPM     -= 125;
-                            autoHoodDeg -= 8;
-                        }
-
-                        autoHoodDeg = Range.clip(autoHoodDeg, 0, 40);
-                        shootServo.setPosition(degToPos(autoHoodDeg));
-
-                        autoRPM = Math.min(autoRPM, MAX_RPM);
-
-                    } else {
-
-                        autoRPM = 4500;
-
-                        if (gamepad2.dpad_up)         autoHoodDeg = PRESET_HIGH_DEG;
-                        else if (gamepad2.dpad_left) autoHoodDeg = PRESET_MID_DEG;
-                        else if (gamepad2.dpad_down) autoHoodDeg = PRESET_LOW_DEG;
-
-                        shootServo.setPosition(degToPos(autoHoodDeg));
-                    }
-
-                    targetTPS = rpmToTicksPerSec(autoRPM);
-
-                    // tx PID aiming
-                    turnCmd = pidTurnFromTx(tx);
-
-                    // Inject turnCmd into drive
-                    double denom = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(turnCmd), 1.0);
-                    frontLeftMotor.setPower((y + x + turnCmd) / denom);
-                    backLeftMotor.setPower( (y - x + turnCmd) / denom);
-                    frontRightMotor.setPower((y - x - turnCmd) / denom);
-                    backRightMotor.setPower( (y + x - turnCmd) / denom);
-
-                } else {
-                    // Not actively aiming: reset PID so it doesn't carry state
-                    resetPid();
-
-                    // Normal driver control
-                    double denom = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1.0);
-                    frontLeftMotor.setPower((y + x + rx) / denom);
-                    backLeftMotor.setPower( (y - x + rx) / denom);
-                    frontRightMotor.setPower((y - x - rx) / denom);
-                    backRightMotor.setPower( (y + x - rx) / denom);
-                }
-
-                // ==========================
-                // Flywheel / feed logic (RT/ LT / idle)
-                // ==========================
-                if (rt) {
-
-                    // RT MODE: apply PIDF (velocity loop) as needed so it actually spins
-                    if (targetTPS > 1 && Math.abs(targetTPS - lastAppliedTPS) > 25) {
-                        //double kF = 26767 / targetTPS;
-                        double kF = 14.9;
-                        PIDFCoefficients pidf = new PIDFCoefficients(FW_kP, FW_kI, FW_kD, kF);
-                        flywheelMotor.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidf);
-                        lastAppliedTPS = targetTPS;
-                    }
-
-                    flywheelMotor.setVelocity(targetTPS);
-
-                    // Motor2 follower: open-loop approximate
-                    double approxPower = Range.clip(targetTPS / rpmToTicksPerSec(MAX_RPM), 0.0, 1.0);
-                    flywheelMotor2.setPower(approxPower);
-
-                    double curTPS = Math.abs(flywheelMotor.getVelocity());
-                    double resumeTPS = rpmToTicksPerSec(autoRPM * RESUME_RPM_FRAC);
-                    double pauseTPS  = rpmToTicksPerSec(autoRPM * PAUSE_RPM_FRAC);
-
-                    if (!feedEnabled && curTPS >= resumeTPS) feedEnabled = true;
-                    else if (feedEnabled && curTPS < pauseTPS) feedEnabled = false;
-
-                    if (feedEnabled && tagSeen) {
-                        rollerIntakeMotor.setPower(INTAKE_POWER);
-                        shootrollerServo.setPower(FEED_FORWARD);
-                    } else {
-                        rollerIntakeMotor.setPower(0);
-                        shootrollerServo.setPower(0);
-                    }
-
-                } else if (lt) {
-
-                    feedEnabled = false;
-                    flywheelMotor.setVelocity(0);
-                    flywheelMotor2.setPower(0);
-
-                    rollerIntakeMotor.setPower(INTAKE_POWER);
-                    shootrollerServo.setPower(FEED_REVERSE);
-
-                } else {
-
-                    feedEnabled = false;
-                    flywheelMotor.setVelocity(0);
-                    flywheelMotor2.setPower(0);
-
-                    rollerIntakeMotor.setPower(0);
-                    shootrollerServo.setPower(0);
-                }
+                double denom = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1.0);
+                frontLeftMotor.setPower((y + x + rx) / denom);
+                backLeftMotor.setPower( (y - x + rx) / denom);
+                frontRightMotor.setPower( (y - x - rx) / denom);
+                backRightMotor.setPower(  (y + x - rx) / denom);
             }
 
+            // ==========================
+            // Flywheel / feed logic (RT/ LT / idle)
+            // ==========================
+            if (rt) {
+
+                if (targetTPS > 1 && Math.abs(targetTPS - lastAppliedTPS) > 25) {
+                    double kF = 14.9;
+                    PIDFCoefficients pidf = new PIDFCoefficients(FW_kP, FW_kI, FW_kD, kF);
+                    flywheelMotor.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidf);
+                    lastAppliedTPS = targetTPS;
+                }
+
+                flywheelMotor.setVelocity(targetTPS);
+
+                double approxPower = Range.clip(targetTPS / rpmToTicksPerSec(MAX_RPM), 0.0, 1.0);
+                flywheelMotor2.setPower(approxPower);
+
+                double curTPS = Math.abs(flywheelMotor.getVelocity());
+                double resumeTPS;
+                double pauseTPS;
+
+                if ( ty < -1 ) {
+                    resumeTPS = rpmToTicksPerSec(autoRPM * RESUME_RPM_FRAC_FAR);
+                    pauseTPS = rpmToTicksPerSec(autoRPM * PAUSE_RPM_FRAC_FAR);
+                }else{
+                    resumeTPS = rpmToTicksPerSec(autoRPM * RESUME_RPM_FRAC);
+                    pauseTPS = rpmToTicksPerSec(autoRPM * PAUSE_RPM_FRAC);
+                }
 
 
-            // MANUAL PRESETS (WHEN NOT AUTO AIMING)
+                if (!feedEnabled && curTPS >= resumeTPS) feedEnabled = true;
+                else if (feedEnabled && curTPS < pauseTPS) feedEnabled = false;
+
+                if (feedEnabled && tagSeen) {
+                    rollerIntakeMotor.setPower(INTAKE_POWER);
+                    rollerIntakeMotor2.setPower(INTAKE_POWER);
+                    shootrollerServo.setPower(FEED_FORWARD);
+                } else {
+                    rollerIntakeMotor.setPower(0);
+                    rollerIntakeMotor2.setPower(0);
+                    shootrollerServo.setPower(0);
+                }
+
+            } else if (lt) {
+
+                feedEnabled = false;
+                targetTPS = rpmToTicksPerSec(IDLE_RPM);
+                flywheelMotor.setVelocity(targetTPS);
+
+                double approxPower = Range.clip(targetTPS / rpmToTicksPerSec(MAX_RPM), 0.0, 1.0);
+                flywheelMotor2.setPower(approxPower);
+
+                rollerIntakeMotor.setPower(INTAKE_POWER);
+                rollerIntakeMotor2.setPower(INTAKE_POWER);
+                shootrollerServo.setPower(FEED_REVERSE);
+
+            } else {
+
+                feedEnabled = false;
+                targetTPS = rpmToTicksPerSec(IDLE_RPM);
+                flywheelMotor.setVelocity(targetTPS);
+
+                double approxPower = Range.clip(targetTPS / rpmToTicksPerSec(MAX_RPM), 0.0, 1.0);
+                flywheelMotor2.setPower(approxPower);
+
+                rollerIntakeMotor.setPower(0);
+                rollerIntakeMotor2.setPower(0);
+                shootrollerServo.setPower(0);
+            }
+
             if (!rt && !manualOverride) {
                 if (gamepad2.dpad_down) shootServo.setPosition(degToPos(PRESET_LOW_DEG));
                 else if (gamepad2.dpad_left) shootServo.setPosition(degToPos(PRESET_MID_DEG));
                 else if (gamepad2.dpad_up) shootServo.setPosition(degToPos(PRESET_HIGH_DEG));
             }
 
-            // Actual RPM telemetry from motor1 encoder
             double curTPS_signed = flywheelMotor.getVelocity();
             double curTPS_abs = Math.abs(curTPS_signed);
             double actualRPM = (curTPS_abs / (TICKS_PER_REV * GEAR_RATIO)) * 60.0;
+
+            double distMm = colorSense.getDistance(DistanceUnit.MM);
+            boolean objectDetected = distMm <= PROX_THRESHOLD_MM;
+
+            // Update Prism only on change (or first loop)
+            if (firstUpdate || objectDetected != lastObjectDetected) {
+                prism.clearAllAnimations();
+
+                if (objectDetected) {
+                    // Object close -> GREEN
+                    prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_0, solidGreen);
+                } else {
+                    // Otherwise -> BLUE
+                    prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_0, solidBlue);
+                }
+
+                lastObjectDetected = objectDetected;
+                firstUpdate = false;
+            }
 
             telemetry.addData("DPAD_UP open-loop", dpadUpOpenLoop4500);
             telemetry.addData("tx", tx);
@@ -375,11 +403,49 @@ public class Q_tele extends LinearOpMode {
             telemetry.addData("hood", autoHoodDeg);
             telemetry.addData("targetRPM", "%.0f", autoRPM);
             telemetry.addData("actualRPM", "%.0f", actualRPM);
+            telemetry.addData("filtRPM", "%.0f", filteredRPM);
+            telemetry.addData("rpmErr", "%.0f", (autoRPM - filteredRPM));
             telemetry.addData("targetTPS", "%.0f", targetTPS);
             telemetry.addData("turnCmd", turnCmd);
             telemetry.addData("aligned", Math.abs(tx) <= AIM_TOL_DEG);
             telemetry.update();
         }
+    }
+
+    // ======= Build the SolversLib InterpLUTs =======
+    private void initTyLUTs() {
+        // MUST be strictly increasing X (Ty) values!
+
+        // Ty -> RPM (ascending Ty)
+        tyToRPM.add(-100, 4300);
+        tyToRPM.add(-2.8, 4200);
+        tyToRPM.add(-2.65, 4200);
+        tyToRPM.add(-2.60, 4200);
+        tyToRPM.add(-2.15, 4200);
+        tyToRPM.add(-2.03, 4200);
+        tyToRPM.add(-1.67, 4200);
+        tyToRPM.add( 0.33, 4200);
+        tyToRPM.add( 3.26, 3900);
+        tyToRPM.add( 9.40, 3700);
+        tyToRPM.add(16.00, 3500);
+        tyToRPM.add(100.00, 3500);
+
+        // Ty -> Hood(deg) (ascending Ty)
+        tyToHoodDeg.add(-100, 40);
+        tyToHoodDeg.add(-2.8, 40);
+        tyToHoodDeg.add(-2.65, 40);
+        tyToHoodDeg.add(-2.60, 40);
+        tyToHoodDeg.add(-2.15, 40);
+        tyToHoodDeg.add(-2.03, 40);
+        tyToHoodDeg.add(-1.67, 35);
+        tyToHoodDeg.add( 0.33, 35);
+        tyToHoodDeg.add( 3.26, 32);
+        tyToHoodDeg.add( 9.40, 29);
+        tyToHoodDeg.add(16.00, 22);
+        tyToHoodDeg.add(100.00, 0);
+
+        tyToRPM.createLUT();
+        tyToHoodDeg.createLUT();
     }
 
     // ======= dt-based tx PID helper =======

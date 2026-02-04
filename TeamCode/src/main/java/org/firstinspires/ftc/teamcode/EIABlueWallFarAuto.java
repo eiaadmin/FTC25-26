@@ -40,6 +40,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -78,7 +79,7 @@ public class EIABlueWallFarAuto extends OpMode {
     private final Pose pickup3Pose = new Pose(25, 15,Math.toRadians(-180));
     private final Pose pickup3grabPose = new Pose(25, 10,Math.toRadians(-180));
     private final Pose scorePose3 = new Pose(55, 19, Math.toRadians(291));
-    private final Pose leavePose = new Pose(65, 30,Math.toRadians(-180));
+    private final Pose leavePose = new Pose(47.7, 64.6, Math.toRadians(-180));
     private Path scorePreload;
     private PathChain grabPickup1, scorePickup1, grabPickup2, scorePickup2,landingPath,grabPickup3, scorePickup3;;//, grabPickup3, scorePickup3, landingPath;
 
@@ -86,7 +87,7 @@ public class EIABlueWallFarAuto extends OpMode {
     // -------- Mechanisms --------
     private DcMotorEx flywheelMotor;      // velocity control
     private DcMotorEx flywheelMotor1;      // velocity control
-    private DcMotor rollerIntakeMotor;
+    private DcMotor rollerIntakeMotor,rollerIntakeMotor2;
     private CRServo shootrollerServo;   // feeder (CR)
     private Servo shootServo,hardstopServo;        // hood (positional)
     //private Limelight3A limelight;
@@ -143,6 +144,7 @@ public class EIABlueWallFarAuto extends OpMode {
         flywheelMotor.setVelocity(0.0);
         flywheelMotor1.setVelocity(0.0);
         rollerIntakeMotor.setPower(INTAKE_POWER_PPG);
+        rollerIntakeMotor2.setPower(INTAKE_POWER_PPG);
         shootrollerServo.setPower(FEED_REVERSE);
         hardstopServo.setPosition(0.55);
 
@@ -180,9 +182,11 @@ public class EIABlueWallFarAuto extends OpMode {
         }
         if (feedEnabled) {
             rollerIntakeMotor.setPower(INTAKE_POWER);
+            rollerIntakeMotor2.setPower(INTAKE_POWER);
             shootrollerServo.setPower(FEED_FORWARD);
         } else {
             rollerIntakeMotor.setPower(0.0);
+            rollerIntakeMotor2.setPower(0.0);
             shootrollerServo.setPower(0.0);
         }
         if(pathTimer.getElapsedTimeSeconds() > 3.05 && pathState ==-1) {
@@ -260,7 +264,7 @@ public class EIABlueWallFarAuto extends OpMode {
                 .build();*/
 
         landingPath = follower.pathBuilder()
-                .addPath(new BezierLine(scorePose3,  leavePose))
+                .addPath(new BezierLine(scorePose2,  leavePose))
                 .setConstantHeadingInterpolation(Math.toRadians(245))
                 .build();
     }
@@ -286,6 +290,7 @@ public class EIABlueWallFarAuto extends OpMode {
                 break;
             case 3:
                 rollerIntakeMotor.setPower(INTAKE_POWER_PPG);
+                rollerIntakeMotor2.setPower(INTAKE_POWER_PPG);
                 follower.followPath(scorePickup1, true);
                 follower.setMaxPower(1.0);
                 setPathState(4);
@@ -325,12 +330,16 @@ public class EIABlueWallFarAuto extends OpMode {
                 setPathState(-9);
                 break;
             case 11:*/
-                flywheelMotor.setVelocity(0.0);
-                flywheelMotor1.setVelocity(0.0);
-                shootrollerServo.setPower(FEED_REVERSE);
                 follower.followPath(landingPath, true);
                 follower.setMaxPower(1.0);
                 setPathState(-11);
+                break;
+            case -11:
+                flywheelMotor.setVelocity(0.0);
+                flywheelMotor1.setVelocity(0.0);
+                shootrollerServo.setPower(0.0);
+                rollerIntakeMotor.setPower(0.0);
+                rollerIntakeMotor2.setPower(0.0);
                 break;
         }
     }
@@ -390,12 +399,15 @@ public class EIABlueWallFarAuto extends OpMode {
         flywheelMotor = hardwareMap.get(DcMotorEx.class, "Flywheelexp0");
         flywheelMotor1 = hardwareMap.get(DcMotorEx.class, "Flywheelexp2");
         rollerIntakeMotor = hardwareMap.dcMotor.get("Rollerintakeexp1");
+        rollerIntakeMotor2 = hardwareMap.dcMotor.get("Rollerintakeexp2");
 
         flywheelMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         flywheelMotor1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         flywheelMotor.setDirection(DcMotor.Direction.REVERSE);
         flywheelMotor1.setDirection(DcMotor.Direction.REVERSE);
         rollerIntakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rollerIntakeMotor2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rollerIntakeMotor2.setDirection(DcMotorSimple.Direction.REVERSE);
         hardstopServo    = hardwareMap.servo.get("hardstopServo");
         hardstopServo.setPosition(0.55);
 
@@ -416,7 +428,7 @@ public class EIABlueWallFarAuto extends OpMode {
     @Override
     public void start() {
         opmodeTimer.resetTimer();
-        //flywheelMotor.setVelocity(TARGET_TPS);
+        shootServo.setPosition(degToPos(PRESET_HIGH_DEG));
         setPathState(0);
     }
 
