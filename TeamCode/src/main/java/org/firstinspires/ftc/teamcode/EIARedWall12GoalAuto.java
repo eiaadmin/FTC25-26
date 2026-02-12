@@ -61,31 +61,35 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@Autonomous(name = "EIARedWallOriginalAuto", group = "Decode2526")
+@Autonomous(name = "EIARedWall12GoalAuto", group = "Decode2526")
 //@Disabled
-public class EIARedWallOriginalAuto extends OpMode {
+public class EIARedWall12GoalAuto extends OpMode {
 
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
     private final ElapsedTime runtime = new ElapsedTime();
     private int pathState;
     private final Pose startPose = new Pose(79, 7.625,Math.toRadians(270)); // Start Pose of our robot.
-    private final Pose scorePose = new Pose(90.4, 75.1, Math.toRadians(-135));//93.4, 83.57, Math.toRadians(-135));
+    //private final Pose scorePose = new Pose(90.4, 75.1, Math.toRadians(-135));//93.4, 83.57, Math.toRadians(-135));
+    private final Pose scorePose = new Pose(88.4, 75.1, Math.toRadians(-135));
     private final Pose scoreControlPose = new Pose(79.48, 45.06, Math.toRadians(-135));
     private final Pose pickup1Pose =new Pose(82.75,72, Math.toRadians(0)); // Grab Highest (First Set) of Artifacts from the Spike Mark.
     private final Pose pickup1grabPose = new Pose(110, 72, Math.toRadians(0));
     private final Pose releasegatePose = new Pose(102, 65, Math.toRadians(0)); // Score Highest (First Set) of Artifacts from the Spike Mark.
     private final Pose releasegateEnablePose = new Pose(121,65, Math.toRadians(0));
-    private final Pose pickup2Pose = new Pose(90.4, 75.1, Math.toRadians(-135));//83.4, 80.1, Math.toRadians(-140)); // Score Highest (First Set) of Artifacts from the Spike Mark.
+    //private final Pose pickup2Pose = new Pose(90.4, 75.1, Math.toRadians(-135));//83.4, 80.1, Math.toRadians(-140)); // Score Highest (First Set) of Artifacts from the Spike Mark.
+    private final Pose pickup2Pose = new Pose(88.4, 75.1, Math.toRadians(-135));
     private final Pose pickup2ControlPose = new Pose(79.48, 45.06, Math.toRadians(-135));//66, 65, Math.toRadians(-135));
     private final Pose pickup3Pose = new Pose(82.75, 46, Math.toRadians(0));
     private final Pose pickup3grabPose = new Pose(120, 46, Math.toRadians(0));//53.67
-    private final Pose pickup4Pose = new Pose(90.4, 75.1, Math.toRadians(-135));//83.4, 80.1, Math.toRadians(-140)); // Score Middle (Second Set) of Artifacts from the Spike Mark.
+    //private final Pose pickup4Pose = new Pose(90.4, 75.1, Math.toRadians(-135));//83.4, 80.1, Math.toRadians(-140)); // Score Middle (Second Set) of Artifacts from the Spike Mark.
+    private final Pose pickup4Pose = new Pose(88.4, 75.1, Math.toRadians(-135));
     private final Pose pickup4ControlPose = new Pose(79.48, 45.06, Math.toRadians(-135));//66, 65, Math.toRadians(-135));
     private final Pose pickup5Pose = new Pose(79.5, 27,Math.toRadians(0));
     private final Pose pickup5grabPose = new Pose(125.7, 27,Math.toRadians(0));
     //129.87, 85.21
-    private final Pose pickup6Pose = new Pose(90.4, 75.1, Math.toRadians(-135));//93.4, 83.57, Math.toRadians(-135)); // Score Lowest (Third Set) of Artifacts from the Spike Mark.
+    //private final Pose pickup6Pose = new Pose(90.4, 75.1, Math.toRadians(-135));//93.4, 83.57, Math.toRadians(-135)); // Score Lowest (Third Set) of Artifacts from the Spike Mark.
+    private final Pose pickup6Pose = new Pose(88.4, 75.1, Math.toRadians(-135));
     private final Pose pickup6ControlPose = new Pose(79.48, 45.06, Math.toRadians(-135));
     private final Pose landingPose = new Pose(100, 65, Math.toRadians(0));
     private PathChain scorePreload,grabPickup1, scorePickup1, grabPickup2, scorePickup2, grabPickup3, scorePickup3, landingPath;
@@ -102,17 +106,19 @@ public class EIARedWallOriginalAuto extends OpMode {
     private static final double HOOD_MIN_DEG = 0.0;
     private static final double HOOD_MAX_DEG = 40.0;
 
-    private double PRESET_HIGH_DEG = 40;
+    private double PRESET_HIGH_DEG = 37;
 
     // -------- Flywheel velocity control --------
     private static final double TICKS_PER_REV = 28.0;  // from your motor specs
     private static final double GEAR_RATIO    = 1.0;   // motor revs per flywheel rev
 
     // RPM targets
-    private static final double TARGET_RPM    = 3500;//4500;//4500.0; // as requested
+    private static final double TARGET_RPM    = 3200;//4500;//4500.0; // as requested
+    private static final double IDLE_RPM       = 3100;
+    double targetTPS = 0;
 
     private double lastAppliedTPS;
-    private static final double FW_kP=8.5,FW_kI=0.0,FW_kD=0.0;
+    private static final double FW_kP=310,FW_kI=0.0,FW_kD=0.0;//FW_kP=8.5,FW_kI=0.0,FW_kD=0.0;
 
     // Feeding thresholds (hysteresis)
     private static final double RESUME_RPM_FRAC = 0.85; // resume feed at >= 85% of target
@@ -144,8 +150,13 @@ public class EIARedWallOriginalAuto extends OpMode {
     }
     public void intakeArtifacts() {
 
-        flywheelMotor.setVelocity(0.0);
-        flywheelMotor1.setVelocity(0.0);
+        //flywheelMotor.setVelocity(0.0);
+        //flywheelMotor1.setVelocity(0.0);
+        targetTPS = rpmToTicksPerSec(IDLE_RPM);
+        flywheelMotor.setVelocity(targetTPS);
+
+        double approxPower = Range.clip(targetTPS / rpmToTicksPerSec(TARGET_RPM), 0.0, 1.0);
+        flywheelMotor1.setPower(approxPower);
         rollerIntakeMotor.setPower(INTAKE_POWER_PPG);
         rollerIntakeMotor2.setPower(INTAKE_POWER_PPG);
         shootrollerServo.setPower(FEED_REVERSE);
@@ -383,7 +394,7 @@ public class EIARedWallOriginalAuto extends OpMode {
         // These loop the movements of the robot, these must be called continuously in order to work
         follower.update();
         if (TARGET_TPS > 1 && Math.abs(TARGET_TPS-lastAppliedTPS)>25){
-            double kF = 14.9;
+            double kF = 11;//14.9;
             PIDFCoefficients flywhlpidf = new PIDFCoefficients(FW_kP,FW_kI,FW_kD,kF);
             flywheelMotor.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER,flywhlpidf);
             lastAppliedTPS=TARGET_TPS;

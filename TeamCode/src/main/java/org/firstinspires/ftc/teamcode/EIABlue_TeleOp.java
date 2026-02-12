@@ -233,7 +233,7 @@ public class EIABlue_TeleOp extends LinearOpMode {
                     tx = ll.getTx() - 3;
                 }
                 if ( ll.getTy() > -14 ){
-                    tx = ll.getTx() - 1.2;
+                    tx = ll.getTx() - 1.2;//+1.05; //1.2
                 }
 
                 ty = ll.getTy();
