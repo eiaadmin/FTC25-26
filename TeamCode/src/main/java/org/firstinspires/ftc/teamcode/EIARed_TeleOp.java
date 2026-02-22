@@ -422,7 +422,7 @@ public class EIARed_TeleOp extends LinearOpMode {
         // MUST be strictly increasing X (Ty) values!
 
         // Ty -> RPM (ascending Ty)
-        tyToRPM.add(-100, 3900);
+        tyToRPM.add(-100, 3950);
         tyToRPM.add(-15.49, 3950);//-2.8
         tyToRPM.add(-15.22, 3950);//-2.65
         tyToRPM.add(-15.00, 3900);//-2.6

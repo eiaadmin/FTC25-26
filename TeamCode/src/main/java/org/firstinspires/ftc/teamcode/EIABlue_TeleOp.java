@@ -47,13 +47,13 @@ public class EIABlue_TeleOp extends LinearOpMode {
     private static final double GEAR_RATIO    = 1.0;
     private static final double MAX_RPM       = 4500.0;
 
-    private static final double IDLE_RPM       = 3200;//2700;
+    private static final double IDLE_RPM       = 3700;//2700;
 
     private static final double RESUME_RPM_FRAC = 0.85;
     private static final double PAUSE_RPM_FRAC  = 0.80;
 
-    private static final double RESUME_RPM_FRAC_FAR = 0.90;
-    private static final double PAUSE_RPM_FRAC_FAR  = 0.85;
+    private static final double RESUME_RPM_FRAC_FAR = 0.85;
+    private static final double PAUSE_RPM_FRAC_FAR  = 0.80;
 
 
     private static final double INTAKE_POWER = 1.0;//.75;
