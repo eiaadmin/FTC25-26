@@ -107,14 +107,14 @@ public class EIABlueSide9GoalAuto extends OpMode {
 
     // RPM targets
     private static final double TARGET_RPM    = 3200;//4500;//4500.0; // as requested
-    private static final double IDLE_RPM       = 3100;
+    private static final double IDLE_RPM       = 3150;
 
     // Feeding thresholds (hysteresis)
     private double lastAppliedTPS;
     double targetTPS = 0;
-    private static final double FW_kP=310,FW_kI=0.0,FW_kD=0.0;//FW_kP=8.5,FW_kI=0.0,FW_kD=0.0;
-    private static final double RESUME_RPM_FRAC = 0.85; // resume feed at >= 85% of target
-    private static final double PAUSE_RPM_FRAC  = 0.80; // pause feed if < 80% of target
+    private static final double FW_kP=350,FW_kI=0.0,FW_kD=0.0;//310//FW_kP=8.5,FW_kI=0.0,FW_kD=0.0;
+    private static final double RESUME_RPM_FRAC = 0.90; // resume feed at >= 85% of target
+    private static final double PAUSE_RPM_FRAC  = 0.85; // pause feed if < 80% of target
 
     // Derived ticks/sec thresholds
     private static final double TARGET_TPS = rpmToTicksPerSec(TARGET_RPM);

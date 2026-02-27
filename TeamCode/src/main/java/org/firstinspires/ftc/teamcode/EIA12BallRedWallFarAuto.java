@@ -31,12 +31,12 @@ package org.firstinspires.ftc.teamcode; // make sure this aligns with class loca
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
+import com.pedropathing.geometry.BezierPoint;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -56,9 +56,9 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
  * to the launch area and shoots it.
  */
 
-@Autonomous(name = "V127EIARedWallFarAuto", group = "Decode2526")
-//@Disabled
-public class V127EIARedWallFarAuto extends OpMode {
+@Autonomous(name = "EIA12BallRedWallFarAuto", group = "Decode2526")
+
+public class EIA12BallRedWallFarAuto extends OpMode {
 
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
@@ -69,18 +69,14 @@ public class V127EIARedWallFarAuto extends OpMode {
     private final Pose pickup1Pose = new Pose(79.5, 27,Math.toRadians(0));
     private final Pose pickup1grabPose = new Pose(123, 27,Math.toRadians(0));
     private final Pose pickup1scorePose = new Pose(89, 17, Math.toRadians(245));
-    private final Pose pickup2Pose = new Pose(108, 17,Math.toRadians(0));
-    private final Pose pickup2grabPose = new Pose(115, 2,Math.toRadians(0));
-    private final Pose pickup2Pose2 = new Pose(123, 10,Math.toRadians(0));
-    private final Pose pickup2grabPose2 = new Pose(115, 1,Math.toRadians(0));
-    private final Pose pickup2Pose3 = new Pose(109, 4,Math.toRadians(0));
-    private final Pose pickup2grabPose3 = new Pose(104,-5 ,Math.toRadians(0));
-    private final Pose pickup2grabPose4 = new Pose(120, 0,Math.toRadians(0));
+    private final Pose pickup2Pose = new Pose(100, 18.84,Math.toRadians(0));
+    private final Pose pickup2grabPose = new Pose(123, 0,Math.toRadians(60));
+    private final Pose pickup2grabPose4 = new Pose(110, 18,Math.toRadians(0));
     private final Pose scorePose2 = new Pose(89, 17, Math.toRadians(245));
     private final Pose pickup3Pose = new Pose(127, 20,Math.toRadians(0));
     private final Pose pickup3grabPose = new Pose(115, 12,Math.toRadians(0));
     private final Pose scorePose3 = new Pose(89, 17, Math.toRadians(245));
-    private final Pose leavePose = new Pose(100, 45, Math.toRadians(0));
+    private final Pose leavePose = new Pose(100, 25,Math.toRadians(245));
     private Path scorePreload;
     private PathChain grabPickup1, scorePickup1, grabPickup2, scorePickup2,landingPath,grabPickup3, scorePickup3;//, landingPath;
 
@@ -100,19 +96,20 @@ public class V127EIARedWallFarAuto extends OpMode {
     private static final double HOOD_MIN_DEG = 0.0;
     private static final double HOOD_MAX_DEG = 40;
 
-    private double PRESET_HIGH_DEG = 40;
+    private double PRESET_HIGH_DEG = 40;//35;
 
     // -------- Flywheel velocity control --------
     private static final double TICKS_PER_REV = 28.0;  // from your motor specs
     private static final double GEAR_RATIO    = 1.0;   // motor revs per flywheel rev
 
     // RPM targets
-    private static final double TARGET_RPM    = 4200;//4500;//4500.0; // as requested
-    private static final double IDLE_RPM      = 800.0;  // as requested
+    private static final double TARGET_RPM    =3950;//4500;//4500.0; // as requested
+    private static final double IDLE_RPM      = 3900;  // as requested
+    double targetTPS = 0;
 
     // Feeding thresholds (hysteresis)
-    private static final double RESUME_RPM_FRAC = 0.85; // resume feed at >= 85% of target
-    private static final double PAUSE_RPM_FRAC  = 0.80; // pause feed if < 80% of target
+    private static final double RESUME_RPM_FRAC = 0.93; // resume feed at >= 85% of target
+    private static final double PAUSE_RPM_FRAC  = 0.88; // pause feed if < 80% of target
 
     // Derived ticks/sec thresholds
     private static final double TARGET_TPS = rpmToTicksPerSec(TARGET_RPM);
@@ -125,7 +122,7 @@ public class V127EIARedWallFarAuto extends OpMode {
     private static final double FEED_FORWARD = -1.0; // forward
     private static final double FEED_REVERSE = +1.0; // reverse
 
-    private static final double FW_kP=8.5,FW_kI=0.0,FW_kD=0.0;
+    private static final double FW_kP=440,FW_kI=0.0,FW_kD=0.0;
 
     // State: feeding allowed while RT is held
     private boolean feedEnabled = false;
@@ -143,18 +140,24 @@ public class V127EIARedWallFarAuto extends OpMode {
     }
     public void intakeArtifacts() {
 
-        flywheelMotor.setVelocity(0.0);
-        flywheelMotor1.setVelocity(0.0);
-        rollerIntakeMotor.setPower(INTAKE_POWER_PPG);
-        rollerIntakeMotor2.setPower(INTAKE_POWER_PPG);
+        targetTPS = rpmToTicksPerSec(IDLE_RPM);
+        flywheelMotor.setVelocity(targetTPS);
+
+        double approxPower = Range.clip(targetTPS / rpmToTicksPerSec(TARGET_RPM), 0.0, 1.0);
+        flywheelMotor1.setPower(approxPower);
+        rollerIntakeMotor.setPower(INTAKE_POWER);
+        rollerIntakeMotor2.setPower(INTAKE_POWER);
         shootrollerServo.setPower(FEED_REVERSE);
         hardstopServo.setPosition(0.55);
 
-        if(pathTimer.getElapsedTimeSeconds() > 2.35 && pathState==-2){
+        if(pathTimer.getElapsedTimeSeconds() > 2.15 && pathState==-2){
             setPathState(3);
         }
-        if(pathTimer.getElapsedTimeSeconds() > 2.65 && pathState==-4){
+        if(pathTimer.getElapsedTimeSeconds() > 2.85 && pathState==-4){
             setPathState(6);
+        }
+        if(pathTimer.getElapsedTimeSeconds() > 2.70 && pathState==-8){
+            setPathState(9);
         }
 
     }
@@ -178,32 +181,37 @@ public class V127EIARedWallFarAuto extends OpMode {
             feedEnabled = true;     // first time at speed -> start/continue feeding
         } else if (feedEnabled && tps < PAUSE_TPS) {
             feedEnabled = false;    // dip detected -> pause feeding until back up to RESUME_TPS
+            targetTPS = rpmToTicksPerSec(IDLE_RPM);
+            flywheelMotor.setVelocity(targetTPS);
+
+            double approxPower = Range.clip(targetTPS / rpmToTicksPerSec(TARGET_RPM), 0.0, 1.0);
+            flywheelMotor1.setPower(approxPower);
         }
         if (feedEnabled) {
             rollerIntakeMotor.setPower(INTAKE_POWER);
             rollerIntakeMotor2.setPower(INTAKE_POWER);
             shootrollerServo.setPower(FEED_FORWARD);
         } else {
-            rollerIntakeMotor.setPower(0.0);
-            rollerIntakeMotor2.setPower(0.0);
+            rollerIntakeMotor.setPower(0);
+            rollerIntakeMotor2.setPower(0);
             shootrollerServo.setPower(0.0);
         }
-        if(pathTimer.getElapsedTimeSeconds() > 3.05 && pathState ==-1) {
+        if(pathTimer.getElapsedTimeSeconds() > 4.0 && pathState ==-1) {
             setPathState(2);
             feedEnabled = false;
         }
-        if(pathTimer.getElapsedTimeSeconds() > 2.85 && pathState ==-3) {
+        if(pathTimer.getElapsedTimeSeconds() > 2.75 && pathState ==-3) {
             setPathState(5);
             feedEnabled = false;
         }
-        if(pathTimer.getElapsedTimeSeconds() > 2.85 && pathState ==-6) {
+        if(pathTimer.getElapsedTimeSeconds() > 2.75 && pathState ==-6) {
             setPathState(8);
             feedEnabled = false;
         }
-        /*if(pathTimer.getElapsedTimeSeconds() > 1.5 && pathState ==-9) {
+        if(pathTimer.getElapsedTimeSeconds() > 1.5 && pathState ==-9) {
             setPathState(11);
             feedEnabled = false;
-        }*/
+        }
 
         telemetry.addData("feedEnabled ", feedEnabled);
         telemetry.addData("Enable Shooter Elapsed Time: ", pathTimer.getElapsedTimeSeconds());
@@ -231,36 +239,30 @@ public class V127EIARedWallFarAuto extends OpMode {
                 .setConstantHeadingInterpolation(Math.toRadians(0))
                 .addPath(new BezierLine(pickup2Pose,  pickup2grabPose))
                 .setConstantHeadingInterpolation(Math.toRadians(0))
-                .addPath(new BezierLine(pickup2grabPose,  pickup2Pose2))
-                .setConstantHeadingInterpolation(Math.toRadians(0))
-                /*.addPath(new BezierLine(pickup2Pose2,  pickup2grabPose2))
-                .setConstantHeadingInterpolation(Math.toRadians(0))
-                .addPath(new BezierLine(pickup2grabPose2,  pickup2Pose3))
-                .setConstantHeadingInterpolation(Math.toRadians(0))
-                .addPath(new BezierLine(pickup2Pose3,  pickup2grabPose3))
-                .setConstantHeadingInterpolation(Math.toRadians(0))
-                .addPath(new BezierLine(pickup2grabPose3,  pickup2grabPose4))
-                .setConstantHeadingInterpolation(Math.toRadians(0))*/
+                .addPath(new BezierPoint(pickup2grabPose))
+                .setConstantHeadingInterpolation(Math.toRadians(55))
+                .addPath(new BezierPoint(pickup2grabPose4))
+                .setConstantHeadingInterpolation(Math.toRadians(-55))
                 .build();
 
         scorePickup2 = follower.pathBuilder()
                 .addPath(new BezierLine(pickup2grabPose4,  scorePose2))
                 .setConstantHeadingInterpolation(Math.toRadians(245))
                 .build();
-        /*grabPickup3 = follower.pathBuilder()
+        grabPickup3 = follower.pathBuilder()
                 .addPath(new BezierLine(scorePose2,  pickup3Pose))
-                .setConstantHeadingInterpolation(Math.toRadians(0))
+                .setConstantHeadingInterpolation(Math.toRadians(29))
                 .addPath(new BezierLine(pickup3Pose,  pickup3grabPose))
-                .setConstantHeadingInterpolation(Math.toRadians(0))
+                .setConstantHeadingInterpolation(Math.toRadians(29))
                 .build();
 
         scorePickup3 = follower.pathBuilder()
                 .addPath(new BezierLine(pickup3Pose,  scorePose3))
                 .setConstantHeadingInterpolation(Math.toRadians(245))
-                .build();*/
+                .build();
 
         landingPath = follower.pathBuilder()
-                .addPath(new BezierLine(scorePose2,  leavePose))
+                .addPath(new BezierLine(scorePose3,  leavePose))
                 .setConstantHeadingInterpolation(Math.toRadians(245))
                 .build();
     }
@@ -280,13 +282,12 @@ public class V127EIARedWallFarAuto extends OpMode {
                 break;
             case 2:
                 follower.followPath(grabPickup1,true);
-                follower.setMaxPower(0.85);
+                follower.setMaxPower(1.0);
                 intakeArtifacts();
                 setPathState(-2);
                 break;
             case 3:
-                rollerIntakeMotor.setPower(INTAKE_POWER_PPG);
-                rollerIntakeMotor2.setPower(INTAKE_POWER_PPG);
+                //rollerIntakeMotor.setPower(INTAKE_POWER_PPG);
                 follower.followPath(scorePickup1, true);
                 follower.setMaxPower(1.0);
                 setPathState(4);
@@ -311,7 +312,7 @@ public class V127EIARedWallFarAuto extends OpMode {
                 setPathState(-6);
                 break;
             case 8:
-                /*follower.followPath(grabPickup3,true);
+                follower.followPath(grabPickup3,true);
                 follower.setMaxPower(0.75);
                 intakeArtifacts();
                 setPathState(-8);
@@ -325,17 +326,13 @@ public class V127EIARedWallFarAuto extends OpMode {
                 enableShooter();
                 setPathState(-9);
                 break;
-            case 11:*/
+            case 11:
+                flywheelMotor.setVelocity(0.0);
+                flywheelMotor1.setVelocity(0.0);
+                shootrollerServo.setPower(FEED_REVERSE);
                 follower.followPath(landingPath, true);
                 follower.setMaxPower(1.0);
                 setPathState(-11);
-                break;
-            case -11:
-                flywheelMotor.setVelocity(0.0);
-                flywheelMotor1.setVelocity(0.0);
-                shootrollerServo.setPower(0.0);
-                rollerIntakeMotor.setPower(0.0);
-                rollerIntakeMotor2.setPower(0.0);
                 break;
         }
     }
@@ -353,13 +350,15 @@ public class V127EIARedWallFarAuto extends OpMode {
         // These loop the movements of the robot, these must be called continuously in order to work
         follower.update();
         if (TARGET_TPS > 1 && Math.abs(TARGET_TPS-lastAppliedTPS)>25){
-            double kF = 14.9;
+            double kF = 19;//14.9;
             PIDFCoefficients flywhlpidf = new PIDFCoefficients(FW_kP,FW_kI,FW_kD,kF);
             flywheelMotor.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER,flywhlpidf);
             lastAppliedTPS=TARGET_TPS;
         }
-        flywheelMotor.setVelocity(TARGET_TPS);
-        double approxPower = Range.clip(TARGET_TPS / rpmToTicksPerSec(TARGET_RPM), 0,1);
+        targetTPS = rpmToTicksPerSec(TARGET_RPM);
+        flywheelMotor.setVelocity(targetTPS);
+
+        double approxPower = Range.clip(targetTPS / rpmToTicksPerSec(TARGET_RPM), 0.0, 1.0);
         flywheelMotor1.setPower(approxPower);
 
         if (pathState == -1 || pathState == -3 || pathState == -6 || pathState == -9) {
@@ -409,8 +408,6 @@ public class V127EIARedWallFarAuto extends OpMode {
 
         buildPaths();
         follower.setStartingPose(startPose);
-        hardstopServo.setPosition(0.55);
-
     }
 
     /** This method is called continuously after Init while waiting for "play". **/
@@ -424,8 +421,12 @@ public class V127EIARedWallFarAuto extends OpMode {
     @Override
     public void start() {
         opmodeTimer.resetTimer();
-        shootServo.setPosition(degToPos(PRESET_HIGH_DEG));
         setPathState(0);
+        targetTPS = rpmToTicksPerSec(TARGET_RPM);
+        flywheelMotor.setVelocity(targetTPS);
+
+        double approxPower = Range.clip(targetTPS / rpmToTicksPerSec(TARGET_RPM), 0.0, 1.0);
+        flywheelMotor1.setPower(approxPower);
     }
 
     /** We do not use this because everything should automatically disable **/

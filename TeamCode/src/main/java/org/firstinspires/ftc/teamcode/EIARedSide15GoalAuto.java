@@ -79,21 +79,21 @@ public class EIARedSide15GoalAuto extends OpMode {
     private final Pose pickup1grabPose = new Pose(123.38, 43, Math.toRadians(0));
     private final Pose releasegatefirstPose = new Pose(100.38, 50, Math.toRadians(0)); // Score Highest (First Set) of Artifacts from the Spike Mark.
     private final Pose releasegatefirstEnablePose = new Pose(108,50, Math.toRadians(0));
-    private final Pose pickup1scorePose = new Pose(83.4, 80.1, Math.toRadians(-140));//83.4, 80.1, Math.toRadians(-140));
-    private final Pose pickup1ControlPose = new Pose(66, 65, Math.toRadians(-135));
+    private final Pose pickup1scorePose = new Pose(84.4, 80.1, Math.toRadians(-135));//83.4, 80.1, Math.toRadians(-140));
+    private final Pose pickup1ControlPose = new Pose(66, 65, Math.toRadians(-140));
     private final Pose releasegatePose = new Pose(77.4, 50, Math.toRadians(0)); // Score Highest (First Set) of Artifacts from the Spike Mark.
     private final Pose releasegateEnablePose = new Pose(108,50, Math.toRadians(0));
     private final Pose pickup2Pose = new Pose(122,33,Math.toRadians(29)); // Score Highest (First Set) of Artifacts from the Spike Mark.
-    private final Pose pickup2scorePose = new Pose(83.4, 80.1, Math.toRadians(-140));
-    private final Pose pickup2ControlPose = new Pose(66, 65, Math.toRadians(-135));
+    private final Pose pickup2scorePose = new Pose(84.4, 80.1, Math.toRadians(-135));
+    private final Pose pickup2ControlPose = new Pose(66, 65, Math.toRadians(-140));
     private final Pose releasegatetwicePose = new Pose(77.4, 50, Math.toRadians(0)); // Score Highest (First Set) of Artifacts from the Spike Mark.
     private final Pose releasegatetwiceEnablePose = new Pose(108,50, Math.toRadians(0));
     private final Pose pickup3Pose = new Pose(122,33,Math.toRadians(29)); // Score Highest (First Set) of Artifacts from the Spike Mark.
-    private final Pose pickup3scorePose = new Pose(83.4, 80.1, Math.toRadians(-140));
-    private final Pose pickup3ControlPose = new Pose(66, 65, Math.toRadians(-135));
+    private final Pose pickup3scorePose = new Pose(84.4, 80.1, Math.toRadians(-135));
+    private final Pose pickup3ControlPose = new Pose(66, 65, Math.toRadians(-140));
     private final Pose pickup4Pose =new Pose(82.75,72, Math.toRadians(0)); // Grab Highest (First Set) of Artifacts from the Spike Mark.
     private final Pose pickup4grabPose = new Pose(110, 72, Math.toRadians(0));
-     private final Pose pickup4scorePose = new Pose(80.4, 86.0, Math.toRadians(-141)); // Landing Pose of our robot. It is facing the goal at a 135 degree angle.
+     private final Pose pickup4scorePose = new Pose(87.4, 90.0, Math.toRadians(-141)); // Landing Pose of our robot. It is facing the goal at a 135 degree angle.
     private Path scorePreload;
     private PathChain grabPickup1, scorePickup1, grabPickup2, scorePickup2, grabPickup3, scorePickup3, grabPickup4, scorePickup4;
 
@@ -109,7 +109,7 @@ public class EIARedSide15GoalAuto extends OpMode {
     private static final double HOOD_MIN_DEG = 0.0;
     private static final double HOOD_MAX_DEG = 40.0;//40.0;
 
-    private double PRESET_HIGH_DEG = 37;
+    private double PRESET_HIGH_DEG = 36.5;
 
     // -------- Flywheel velocity control --------
     private static final double TICKS_PER_REV = 28.0;  // from your motor specs
@@ -117,14 +117,14 @@ public class EIARedSide15GoalAuto extends OpMode {
 
     // RPM targets
     private static final double TARGET_RPM    = 3200;//3600; as requested
-    private static final double IDLE_RPM       = 3100;
+    private static final double IDLE_RPM       = 3150;
 
     private double lastAppliedTPS;
     double targetTPS = 0;
-    private static final double FW_kP=310,FW_kI=0.0,FW_kD=0.0;
+    private static final double FW_kP=350,FW_kI=0.0,FW_kD=0.0; //350
     // Feeding thresholds (hysteresis)
-    private static final double RESUME_RPM_FRAC = 0.85; // resume feed at >= 85% of target
-    private static final double PAUSE_RPM_FRAC  = 0.80; // pause feed if < 80% of target
+    private static final double RESUME_RPM_FRAC = 0.90; // resume feed at >= 85% of target
+    private static final double PAUSE_RPM_FRAC  = 0.85; // pause feed if < 80% of target
 
     // Derived ticks/sec thresholds
     private static final double TARGET_TPS = rpmToTicksPerSec(TARGET_RPM);
@@ -166,10 +166,10 @@ public class EIARedSide15GoalAuto extends OpMode {
         if(pathTimer.getElapsedTimeSeconds() > 2.60 && pathState==-2){
             setPathState(3);
         }
-        if(pathTimer.getElapsedTimeSeconds() > 4.20 && pathState==-4){
+        if(pathTimer.getElapsedTimeSeconds() > 4.30 && pathState==-4){
             setPathState(6);
         }
-        if(pathTimer.getElapsedTimeSeconds() > 4.20 && pathState==-7){
+        if(pathTimer.getElapsedTimeSeconds() > 4.30 && pathState==-7){
             setPathState(9);
         }
         if(pathTimer.getElapsedTimeSeconds() > 1.90 && pathState==-10){
@@ -212,11 +212,11 @@ public class EIARedSide15GoalAuto extends OpMode {
             setPathState(8);
             feedEnabled = false;
         }
-        if(pathTimer.getElapsedTimeSeconds() > 1.35 && pathState ==-9) {
+        if(pathTimer.getElapsedTimeSeconds() > 1.30 && pathState ==-9) {
             setPathState(11);
             feedEnabled = false;
         }
-        if(pathTimer.getElapsedTimeSeconds() > 1.35 && pathState ==-14) {
+        if(pathTimer.getElapsedTimeSeconds() > 1.30 && pathState ==-14) {
             setPathState(15);
             feedEnabled = false;
         }
@@ -427,7 +427,7 @@ public class EIARedSide15GoalAuto extends OpMode {
         // These loop the movements of the robot, these must be called continuously in order to work
         follower.update();
         if (TARGET_TPS > 1 && Math.abs(TARGET_TPS-lastAppliedTPS)>25){
-            double kF = 11;//14.9;
+            double kF = 11; //14.9
             PIDFCoefficients flywhlpidf = new PIDFCoefficients(FW_kP,FW_kI,FW_kD,kF);
             flywheelMotor.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER,flywhlpidf);
             lastAppliedTPS=TARGET_TPS;

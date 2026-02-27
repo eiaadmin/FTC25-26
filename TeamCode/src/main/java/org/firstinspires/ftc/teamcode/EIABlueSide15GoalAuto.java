@@ -76,18 +76,18 @@ public class EIABlueSide15GoalAuto extends OpMode {
     private final Pose pickup1grabPose = new Pose(24, 49, Math.toRadians(-180));//27.86
     private final Pose releasegatefirstPose = new Pose(44, 57, Math.toRadians(-180)); // Score Highest (First Set) of Artifacts from the Spike Mark.
     private final Pose releasegatefirstEnablePose = new Pose(33,57, Math.toRadians(-180));
-    private final Pose pickup1scorePose = new Pose(59.8, 83.57, Math.toRadians(-45));//83.4, 80.1, Math.toRadians(-140));
-    private final Pose pickup1ControlPose = new Pose(70.26,73.67, Math.toRadians(-45));
+    private final Pose pickup1scorePose = new Pose(60.8, 83.57, Math.toRadians(-45));//83.4, 80.1, Math.toRadians(-140));
+    private final Pose pickup1ControlPose = new Pose(70.26,73.67, Math.toRadians(-47));
     private final Pose releasegatePose = new Pose(62.8, 57, Math.toRadians(-180)); // Score Highest (First Set) of Artifacts from the Spike Mark.
     private final Pose releasegateEnablePose = new Pose(33,57, Math.toRadians(-180));
     private final Pose pickup2Pose = new Pose(18, 38, Math.toRadians(-220)); // Score Highest (First Set) of Artifacts from the Spike Mark.
-    private final Pose pickup2scorePose = new Pose(59.8, 83.57, Math.toRadians(-45)); //changed 02072026
-    private final Pose pickup2ControlPose = new Pose(72.26,53.67, Math.toRadians(-45));
+    private final Pose pickup2scorePose = new Pose(60.8, 83.57, Math.toRadians(-45)); //changed 02072026
+    private final Pose pickup2ControlPose = new Pose(72.26,53.67, Math.toRadians(-47));
     private final Pose releasegatetwicePose = new Pose(62.8, 57, Math.toRadians(-180)); // Score Highest (First Set) of Artifacts from the Spike Mark.
     private final Pose releasegatetwiceEnablePose = new Pose(33,57, Math.toRadians(-180));
     private final Pose pickup3Pose = new Pose(18, 38, Math.toRadians(-220)); // Score Highest (First Set) of Artifacts from the Spike Mark.
-    private final Pose pickup3scorePose = new Pose(59.8, 83.57, Math.toRadians(-44));
-    private final Pose pickup3ControlPose = new Pose(72.26,53.67, Math.toRadians(-45));
+    private final Pose pickup3scorePose = new Pose(60.8, 83.57, Math.toRadians(-44));
+    private final Pose pickup3ControlPose = new Pose(72.26,53.67, Math.toRadians(-47));
     private final Pose pickup4Pose =new Pose(60.43, 73.67, Math.toRadians(-180)); // Grab Highest (First Set) of Artifacts from the Spike Mark.
     private final Pose pickup4grabPose = new Pose(35, 73.67, Math.toRadians(-180));
     private final Pose pickup4scorePose = new Pose(64.8, 83.57, Math.toRadians(-45));
@@ -106,7 +106,7 @@ public class EIABlueSide15GoalAuto extends OpMode {
     private static final double HOOD_MIN_DEG = 0.0;
     private static final double HOOD_MAX_DEG = 40.0;
 
-    private double PRESET_HIGH_DEG = 37.0;
+    private double PRESET_HIGH_DEG = 36.5;
 
     // -------- Flywheel velocity control --------
     private static final double TICKS_PER_REV = 28.0;  // from your motor specs
@@ -114,13 +114,13 @@ public class EIABlueSide15GoalAuto extends OpMode {
 
     // RPM targets
     private static final double TARGET_RPM    = 3200;//4500;//4500.0; // as requested
-    private static final double IDLE_RPM       = 3100;
+    private static final double IDLE_RPM       = 3150;
 
     // Feeding thresholds (hysteresis)
     private double lastAppliedTPS;
-    private static final double FW_kP=310,FW_kI=0.0,FW_kD=0.0;
-    private static final double RESUME_RPM_FRAC = 0.85; // resume feed at >= 85% of target
-    private static final double PAUSE_RPM_FRAC  = 0.80; // pause feed if < 80% of target
+    private static final double FW_kP=350,FW_kI=0.0,FW_kD=0.0;//310
+    private static final double RESUME_RPM_FRAC = 0.90; // resume feed at >= 85% of target
+    private static final double PAUSE_RPM_FRAC  = 0.85; // pause feed if < 80% of target
 
     // Derived ticks/sec thresholds
     private static final double TARGET_TPS = rpmToTicksPerSec(TARGET_RPM);
@@ -161,7 +161,7 @@ public class EIABlueSide15GoalAuto extends OpMode {
         shootrollerServo.setPower(FEED_REVERSE);
         hardstopServo.setPosition(0.55);
 
-        if(pathTimer.getElapsedTimeSeconds() > 2.55 && pathState==-2){
+        if(pathTimer.getElapsedTimeSeconds() > 2.60 && pathState==-2){
             setPathState(3);
         }
         if(pathTimer.getElapsedTimeSeconds() > 4.10 && pathState==-4){

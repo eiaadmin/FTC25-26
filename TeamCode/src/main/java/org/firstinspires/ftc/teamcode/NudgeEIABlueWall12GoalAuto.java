@@ -116,12 +116,12 @@ public class NudgeEIABlueWall12GoalAuto extends OpMode {
 
     // RPM targets
     private static final double TARGET_RPM    = 3200;//4500;//4500.0; // as requested
-    private static final double IDLE_RPM       = 3100;
+    private static final double IDLE_RPM       = 3150;
     double targetTPS = 0;
 
     // Feeding thresholds (hysteresis)
-    private static final double RESUME_RPM_FRAC = 0.85; // resume feed at >= 85% of target
-    private static final double PAUSE_RPM_FRAC  = 0.80; // pause feed if < 80% of target
+    private static final double RESUME_RPM_FRAC = 0.90; // resume feed at >= 85% of target
+    private static final double PAUSE_RPM_FRAC  = 0.85; // pause feed if < 80% of target
 
     // Derived ticks/sec thresholds
     private static final double TARGET_TPS = rpmToTicksPerSec(TARGET_RPM);
@@ -134,7 +134,7 @@ public class NudgeEIABlueWall12GoalAuto extends OpMode {
     private static final double FEED_FORWARD = -1.0; // forward
     private static final double FEED_REVERSE = +1.0; // reverse
 
-    private static final double FW_kP=310,FW_kI=0.0,FW_kD=0.0;//FW_kP=8.5,FW_kI=0.0,FW_kD=0.0;
+    private static final double FW_kP=350,FW_kI=0.0,FW_kD=0.0;//300//FW_kP=8.5,FW_kI=0.0,FW_kD=0.0;
 
     // State: feeding allowed while RT is held
     private boolean feedEnabled = false;

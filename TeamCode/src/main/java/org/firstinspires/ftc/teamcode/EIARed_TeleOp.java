@@ -15,15 +15,13 @@ import com.qualcomm.robotcore.util.Range;
 
 import com.seattlesolvers.solverslib.util.InterpLUT;
 
-
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.Prism.Color;
 import org.firstinspires.ftc.teamcode.Prism.GoBildaPrismDriver;
 import org.firstinspires.ftc.teamcode.Prism.PrismAnimations;
 
-
-
-@TeleOp(name="EIARedTeleOp", group="Linear OpMode")
+@TeleOp(name="EIARed_TeleOp", group="Linear OpMode")
 public class EIARed_TeleOp extends LinearOpMode {
 
     private DcMotor frontLeftMotor, backLeftMotor, frontRightMotor, backRightMotor;
@@ -33,6 +31,7 @@ public class EIARed_TeleOp extends LinearOpMode {
     private Servo shootServo;
     private Servo hardstopServo;
     private Limelight3A limelight;
+    double curTPS_signed_local,curTPS_abs_local,actualRPM_local;
 
     private static final double MIN_POS = 0;
     private static final double MAX_POS = 1;
@@ -47,21 +46,21 @@ public class EIARed_TeleOp extends LinearOpMode {
     private static final double GEAR_RATIO    = 1.0;
     private static final double MAX_RPM       = 4500.0;
 
-    private static final double IDLE_RPM       = 3200;//2700;
+    private static final double IDLE_RPM       = 4150;//4150;//2700;
 
     private static final double RESUME_RPM_FRAC = 0.85;
     private static final double PAUSE_RPM_FRAC  = 0.80;
 
-    private static final double RESUME_RPM_FRAC_FAR = 0.90;
-    private static final double PAUSE_RPM_FRAC_FAR  = 0.85;
+    private static final double RESUME_RPM_FRAC_FAR = 0.93;
+    private static final double PAUSE_RPM_FRAC_FAR  = 0.88;
 
-
-    private static final double INTAKE_POWER = 1.0;
+    private static final double INTAKE_POWER = 1.0;//.75;
+    private static final double INTAKE_POWER1 = 1.0;//.75;
     private static final double FEED_FORWARD = -1.0;
     private static final double FEED_REVERSE = +1.0;
 
     // ===== Flywheel PID (kF computed dynamically in RT mode ONLY) =====
-    private static final double FW_kP = 310;
+    private static final double FW_kP = 440;
     private static final double FW_kI = 0.0;
     private static final double FW_kD = 0.0;
 
@@ -100,7 +99,6 @@ public class EIARed_TeleOp extends LinearOpMode {
     private final PrismAnimations.Solid solidGreen = new PrismAnimations.Solid(Color.GREEN);
     private final PrismAnimations.Solid solidBlue  = new PrismAnimations.Solid(Color.BLUE);
 
-
     private static final double PROX_THRESHOLD_MM = 65.0;
 
     // =========================================================
@@ -108,8 +106,11 @@ public class EIARed_TeleOp extends LinearOpMode {
     // =========================================================
     private static final double RPM_FILTER_ALPHA = 0.20;       // 0.10..0.30
     private static final double RPM_DEADBAND     = 75.0;       // ignore small error/noise
-    private static final double HOOD_COMP_DEG_PER_RPM = 0.00070; // start ~0.0010
-    private static final double HOOD_COMP_MAX_DEG     = 2.0;    // limit trim
+    private static final double HOOD_COMP_DEG_PER_RPM = 0.00070; // (kept, unused by new logic)
+    private static final double HOOD_COMP_MAX_DEG     = 6.0;    // limit trim
+
+    // NEW: rounding step (nearest 0.5 deg)
+    private static final double HOOD_STEP_DEG = 0.5;
 
     private double filteredRPM = 0.0;
 
@@ -140,14 +141,14 @@ public class EIARed_TeleOp extends LinearOpMode {
         rollerIntakeMotor2 = hardwareMap.dcMotor.get("Rollerintakeexp2");
 
         limelight = hardwareMap.get(Limelight3A.class, "EIA Limelight");
-        limelight.pipelineSwitch(4);
+        limelight.pipelineSwitch(4);//0
 
         // Motor1: velocity loop available
         flywheelMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         flywheelMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
         // Motor2: follower open-loop (safe even if no encoder)
-        flywheelMotor2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        flywheelMotor2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         flywheelMotor2.setDirection(DcMotorSimple.Direction.REVERSE);
 
         rollerIntakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -169,8 +170,6 @@ public class EIARed_TeleOp extends LinearOpMode {
         solidBlue.setBrightness(100);
         solidBlue.setStartIndex(0);
         solidBlue.setStopIndex(119);
-
-        //shootServo.setPosition(0.5);
 
         telemetry.addLine("READY");
         telemetry.update();
@@ -202,7 +201,7 @@ public class EIARed_TeleOp extends LinearOpMode {
 
             // HARDSTOP
             if (rt) hardstopServo.setPosition(0.15);
-            else    hardstopServo.setPosition(0.40);
+            else    hardstopServo.setPosition(0.40);//0.55);
 
             LLResult ll = limelight.getLatestResult();
             boolean tagSeen = (ll != null && ll.isValid());
@@ -210,6 +209,12 @@ public class EIARed_TeleOp extends LinearOpMode {
             double tx = 0, ty = 0;
             double autoHoodDeg = 0, autoRPM = 0;
             double turnCmd = 0;
+
+            // Debug telemetry for new hood comp
+            double hoodCompDegTelemetry = 0.0;
+            double rpmDropTelemetry = 0.0;
+            double hoodBaseDegTelemetry = 0.0;
+            double hoodFinalDegTelemetry = 0.0;
 
             manualOverride =
                     gamepad2.dpad_up ||
@@ -219,20 +224,20 @@ public class EIARed_TeleOp extends LinearOpMode {
             // ==========================
             // AUTO SHOOTING (RT + tag)
             // SolversLib InterpLUT (NO TY CLAMPING)
-            // + RPM dip -> hood compensation
+            // + NEW RPM dip -> hood compensation (YOUR PSEUDOCODE + rounding)
             // ==========================
             if (rt && tagSeen) {
 
                 tx = ll.getTx();
 
-                //if from far on red it goes to the left of the goal (towards the table) decrease -4 try -4.5.
-                //if from far on red it goes to the right of the goal (towards the mirror) increase -4 try -3.5.
-                //if from close on red it goes to the left of the goal (towards the table) decrease -1.8 try -2.
-                //if from close on red it goes to the right of the goal (towards the mirror) increase -1.8 try -1.6.
-                if ( ll.getTy() <= -14 ) {
-                    tx = ll.getTx() - 1.8;
+                //if from far on blue it goes to the left of the goal (towards the trashcans) increase -3 try -2.5.
+                //if from far on blue it goes to the right of the goal (towards the table) decrease -3 try -3.5.
+                //if from close on blue it goes to the left of the goal (towards the trashcans) increase -1.2 try -1
+                //if from close on blue it goes to the right of the goal (towards the table) decrease -1.2 try -1.5
+                if ( ll.getTy() <= -16.85 ) {
+                    tx = ll.getTx() + 1.8;
                 }
-                if ( ll.getTy() > -14 ){
+                if ( ll.getTy() > -16.85 ){
                     tx = ll.getTx() - 4;
                 }
 
@@ -243,30 +248,49 @@ public class EIARed_TeleOp extends LinearOpMode {
                     autoHoodDeg = tyToHoodDeg.get(ty);
                     autoRPM     = tyToRPM.get(ty);
 
-                    // ---- RPM droop compensation (adds hood angle when RPM dips) ----
+                    hoodBaseDegTelemetry = autoHoodDeg;
+
+                    // ---- RPM droop compensation (NEW) ----
                     // actual RPM from motor1 encoder
-                    double curTPS_signed_local = flywheelMotor.getVelocity();
-                    double curTPS_abs_local = Math.abs(curTPS_signed_local);
-                    double actualRPM_local = (curTPS_abs_local / (TICKS_PER_REV * GEAR_RATIO)) * 60.0;
+                    curTPS_signed_local = flywheelMotor.getVelocity();
+                    curTPS_abs_local = Math.abs(curTPS_signed_local);
+                    double rpm1 = (Math.abs(flywheelMotor.getVelocity()) / (TICKS_PER_REV * GEAR_RATIO)) * 60.0;
+                    double rpm2 = (Math.abs(flywheelMotor2.getVelocity()) / (TICKS_PER_REV * GEAR_RATIO)) * 60.0;
+                    double actualRPM_local = (rpm1 + rpm2) / 2.0;
+
+                    telemetry.addData("Flywheel Motor Velocity: ",curTPS_signed_local);
+                    telemetry.addData("curTPS_abs_local: ",curTPS_abs_local);
+                    telemetry.addData("actualRPM_local: ",actualRPM_local);
 
                     // low-pass filter RPM to avoid jitter
                     if (filteredRPM <= 1.0) filteredRPM = actualRPM_local; // init
                     filteredRPM = (1.0 - RPM_FILTER_ALPHA) * filteredRPM + RPM_FILTER_ALPHA * actualRPM_local;
 
                     // positive when wheel is below target
-                    double rpmError = autoRPM - filteredRPM;
+                    double rpmDrop = autoRPM - filteredRPM;
+                    rpmDropTelemetry = rpmDrop;
 
                     // deadband
-                    if (rpmError < RPM_DEADBAND) rpmError = 0.0;
+                    if (rpmDrop < RPM_DEADBAND) rpmDrop = 0.0;
 
-                    // convert to hood degrees (+)
-                    double hoodComp = rpmError * HOOD_COMP_DEG_PER_RPM;
-                    hoodComp = Range.clip(hoodComp, 0.0, HOOD_COMP_MAX_DEG);
+                    // YOUR LOGIC:
+                    // if actualRPM <= targetRPM:
+                    //    hoodDeg -= (targetRPM - actualRPM) / 100
+                    if (rpmDrop > 0.0) {
+                        double hoodDeltaDeg = rpmDrop / 140.0; // <- /100 like your pseudocode
+                        hoodDeltaDeg = Range.clip(hoodDeltaDeg, 0.0, HOOD_COMP_MAX_DEG);
 
-                    autoHoodDeg += hoodComp;
-                    // --------------------------------------------------------------
+                        autoHoodDeg += hoodDeltaDeg;           // SUBTRACT as requested
+                        hoodCompDegTelemetry = hoodDeltaDeg;
+                    }
 
-                    autoHoodDeg = Range.clip(autoHoodDeg, 0, 50);
+                    // Round to nearest 0.5 degree
+                    autoHoodDeg = roundToStep(autoHoodDeg, HOOD_STEP_DEG);
+
+                    // Clamp and apply
+                    autoHoodDeg = Range.clip(autoHoodDeg, HOOD_MIN_DEG, HOOD_MAX_DEG);
+                    hoodFinalDegTelemetry = autoHoodDeg;
+
                     shootServo.setPosition(degToPos(autoHoodDeg));
 
                     autoRPM = Math.min(autoRPM, MAX_RPM);
@@ -279,6 +303,7 @@ public class EIARed_TeleOp extends LinearOpMode {
                     else if (gamepad2.dpad_left) autoHoodDeg = PRESET_MID_DEG;
                     else if (gamepad2.dpad_down) autoHoodDeg = PRESET_LOW_DEG;
 
+                    autoHoodDeg = roundToStep(autoHoodDeg, HOOD_STEP_DEG);
                     shootServo.setPosition(degToPos(autoHoodDeg));
                 }
 
@@ -308,16 +333,15 @@ public class EIARed_TeleOp extends LinearOpMode {
             if (rt) {
 
                 if (targetTPS > 1 && Math.abs(targetTPS - lastAppliedTPS) > 25) {
-                    double kF = 11;
+                    double kF = 19;
                     PIDFCoefficients pidf = new PIDFCoefficients(FW_kP, FW_kI, FW_kD, kF);
                     flywheelMotor.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidf);
+                    flywheelMotor2.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidf);
                     lastAppliedTPS = targetTPS;
                 }
 
                 flywheelMotor.setVelocity(targetTPS);
-
-                double approxPower = Range.clip(targetTPS / rpmToTicksPerSec(MAX_RPM), 0.0, 1.0);
-                flywheelMotor2.setPower(approxPower);
+                flywheelMotor2.setVelocity(targetTPS);
 
                 double curTPS = Math.abs(flywheelMotor.getVelocity());
                 double resumeTPS;
@@ -326,18 +350,17 @@ public class EIARed_TeleOp extends LinearOpMode {
                 if ( ty < -14 ) {
                     resumeTPS = rpmToTicksPerSec(autoRPM * RESUME_RPM_FRAC_FAR);
                     pauseTPS = rpmToTicksPerSec(autoRPM * PAUSE_RPM_FRAC_FAR);
-                }else{
+                } else {
                     resumeTPS = rpmToTicksPerSec(autoRPM * RESUME_RPM_FRAC);
                     pauseTPS = rpmToTicksPerSec(autoRPM * PAUSE_RPM_FRAC);
                 }
-
 
                 if (!feedEnabled && curTPS >= resumeTPS) feedEnabled = true;
                 else if (feedEnabled && curTPS < pauseTPS) feedEnabled = false;
 
                 if (feedEnabled && tagSeen && Math.abs(tx) <= AIM_TOL_DEG) {
                     rollerIntakeMotor.setPower(INTAKE_POWER);
-                    rollerIntakeMotor2.setPower(INTAKE_POWER);
+                    rollerIntakeMotor2.setPower(INTAKE_POWER1);
                     shootrollerServo.setPower(FEED_FORWARD);
                 } else {
                     rollerIntakeMotor.setPower(0);
@@ -350,9 +373,7 @@ public class EIARed_TeleOp extends LinearOpMode {
                 feedEnabled = false;
                 targetTPS = rpmToTicksPerSec(IDLE_RPM);
                 flywheelMotor.setVelocity(targetTPS);
-
-                double approxPower = Range.clip(targetTPS / rpmToTicksPerSec(MAX_RPM), 0.0, 1.0);
-                flywheelMotor2.setPower(approxPower);
+                flywheelMotor2.setVelocity(targetTPS);
 
                 rollerIntakeMotor.setPower(INTAKE_POWER);
                 rollerIntakeMotor2.setPower(INTAKE_POWER);
@@ -363,9 +384,7 @@ public class EIARed_TeleOp extends LinearOpMode {
                 feedEnabled = false;
                 targetTPS = rpmToTicksPerSec(IDLE_RPM);
                 flywheelMotor.setVelocity(targetTPS);
-
-                double approxPower = Range.clip(targetTPS / rpmToTicksPerSec(MAX_RPM), 0.0, 1.0);
-                flywheelMotor2.setPower(approxPower);
+                flywheelMotor2.setVelocity(targetTPS);
 
                 rollerIntakeMotor.setPower(0);
                 rollerIntakeMotor2.setPower(0);
@@ -405,11 +424,20 @@ public class EIARed_TeleOp extends LinearOpMode {
             telemetry.addData("tx", tx);
             telemetry.addData("ty", ty);
             telemetry.addData("tagSeen", tagSeen);
-            telemetry.addData("hood", autoHoodDeg);
+
+            telemetry.addData("hoodBaseDeg", "%.2f", hoodBaseDegTelemetry);
+            telemetry.addData("hoodCompDeg", "%.2f", hoodCompDegTelemetry);
+            telemetry.addData("hoodFinalDeg", "%.2f", hoodFinalDegTelemetry);
+
             telemetry.addData("targetRPM", "%.0f", autoRPM);
-            telemetry.addData("actualRPM", "%.0f", actualRPM);
+            double rpm1 = (Math.abs(flywheelMotor.getVelocity()) / (TICKS_PER_REV * GEAR_RATIO)) * 60.0;
+            double rpm2 = (Math.abs(flywheelMotor2.getVelocity()) / (TICKS_PER_REV * GEAR_RATIO)) * 60.0;
+            telemetry.addData("RPM1", "%.0f", rpm1);
+            telemetry.addData("RPM2", "%.0f", rpm2);
+            telemetry.addData("Mismatch", "%.0f", (rpm1 - rpm2));
             telemetry.addData("filtRPM", "%.0f", filteredRPM);
-            telemetry.addData("rpmErr", "%.0f", (autoRPM - filteredRPM));
+            telemetry.addData("rpmDrop", "%.0f", rpmDropTelemetry);
+
             telemetry.addData("targetTPS", "%.0f", targetTPS);
             telemetry.addData("turnCmd", turnCmd);
             telemetry.addData("aligned", Math.abs(tx) <= AIM_TOL_DEG);
@@ -422,26 +450,32 @@ public class EIARed_TeleOp extends LinearOpMode {
         // MUST be strictly increasing X (Ty) values!
 
         // Ty -> RPM (ascending Ty)
-        tyToRPM.add(-100, 3950);
-        tyToRPM.add(-15.49, 3950);//-2.8
-        tyToRPM.add(-15.22, 3950);//-2.65
-        tyToRPM.add(-15.00, 3900);//-2.6
-        tyToRPM.add(-14.9, 3900);//2.15
-        tyToRPM.add(-14.6, 3900);//-2.03
-        tyToRPM.add(-14.23, 3600);//-1.67
-        tyToRPM.add( -13.13, 3425);//0.33
-        tyToRPM.add( -11.44, 3150);//3.26
-        tyToRPM.add( -8, 3100);//9.40
-        tyToRPM.add(-4.75, 2800);//16.00
-        tyToRPM.add(0, 2700);//16.00
-        tyToRPM.add(12, 2600);//16.00
+        tyToRPM.add(-100, 3950);//3950
+        tyToRPM.add(-20, 3950);//3950
+        tyToRPM.add(-16.85, 3950);//3950
+        tyToRPM.add(-16.84, 3300);
+        tyToRPM.add(-15.49, 3300);
+        tyToRPM.add(-15.22, 3300);
+        tyToRPM.add(-15.00, 3300);
+        tyToRPM.add(-14.9, 3200);
+        tyToRPM.add(-14.6, 3200);
+        tyToRPM.add(-14.23, 3200);
+        tyToRPM.add( -13.13, 3125);
+        tyToRPM.add( -11.44, 3050);
+        tyToRPM.add( -8, 3050);
+        tyToRPM.add(-4.75, 2800);
+        tyToRPM.add(0, 2700);
+        tyToRPM.add(12, 2600);
         tyToRPM.add(100.00, 2800);
 
         // Ty -> Hood(deg) (ascending Ty)
-        tyToHoodDeg.add(-100, 40);
-        tyToHoodDeg.add(-15.49, 40);
-        tyToHoodDeg.add(-15.22, 40);
-        tyToHoodDeg.add(-15.00, 40);
+        tyToHoodDeg.add(-100, 41);
+        tyToHoodDeg.add(-20, 41);//-2.8
+        tyToHoodDeg.add(-16.85, 41);//-2.8
+        tyToHoodDeg.add(-16.84, 41);//-2.8
+        tyToHoodDeg.add(-15.49, 41);
+        tyToHoodDeg.add(-15.22, 41);
+        tyToHoodDeg.add(-15.00, 41);
         tyToHoodDeg.add(-14.9, 40);
         tyToHoodDeg.add(-14.6, 40);
         tyToHoodDeg.add(-14.23, 36);
@@ -496,5 +530,10 @@ public class EIARed_TeleOp extends LinearOpMode {
     private double degToPos(double deg) {
         double pos = Range.scale(deg, HOOD_MIN_DEG, HOOD_MAX_DEG, MIN_POS, MAX_POS);
         return Range.clip(pos, 0, 1);
+    }
+
+    private static double roundToStep(double value, double stepDeg) {
+        if (stepDeg <= 0) return value;
+        return Math.round(value / stepDeg) * stepDeg;
     }
 }
