@@ -1,9 +1,8 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.limelightvision.LLResult;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -13,9 +12,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
-
 import com.seattlesolvers.solverslib.util.InterpLUT;
-
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.Prism.Color;
@@ -23,10 +20,8 @@ import org.firstinspires.ftc.teamcode.Prism.GoBildaPrismDriver;
 import org.firstinspires.ftc.teamcode.Prism.PrismAnimations;
 
 
-
-@TeleOp(name="EIABlueTeleOp", group="Linear OpMode")
-@Disabled
-public class EIABlue_TeleOp extends LinearOpMode {
+@TeleOp(name="EIABlueTeleOpWithManual", group="Linear OpMode")
+public class EIABlue_TeleOp_With_Manual extends LinearOpMode {
 
     private DcMotor frontLeftMotor, backLeftMotor, frontRightMotor, backRightMotor;
     private DcMotorEx flywheelMotor, flywheelMotor2;
@@ -42,9 +37,9 @@ public class EIABlue_TeleOp extends LinearOpMode {
     private static final double HOOD_MIN_DEG = 0.0;
     private static final double HOOD_MAX_DEG = 50.0;
 
-    private static final double PRESET_LOW_DEG  = 10.0;
-    private static final double PRESET_MID_DEG  = 24.0;
-    private static final double PRESET_HIGH_DEG = 35.0;
+    private static final double PRESET_LOW_DEG  = 37.0;
+    private static final double PRESET_MID_DEG  = 36.5;
+    private static final double PRESET_HIGH_DEG = 42.0;
 
     private static final double TICKS_PER_REV = 28.0;
     private static final double GEAR_RATIO    = 1.0;
@@ -69,12 +64,12 @@ public class EIABlue_TeleOp extends LinearOpMode {
     private static final double FW_kD = 0.0;
 
     // ===== tx PID (dt-based, tolerance snap, clamped) =====
-    private static final double AIM_TOL_DEG = 1.5; // aligned if |tx| <= tolerance
+    private static final double AIM_TOL_DEG = 2.0; // aligned if |tx| <= tolerance
     private static final double MAX_TURN   = 0.6;  // clamp PID output to motor power
 
-    private static final double AIM_kP = 0.035;
+    private static final double AIM_kP = 0.020;
     private static final double AIM_kI = 0.000;
-    private static final double AIM_kD = 0.002;
+    private static final double AIM_kD = 0.003;
 
     private static final double I_ZONE_DEG = 5.0;
     private static final double I_MAX      = 0.2;
@@ -85,10 +80,11 @@ public class EIABlue_TeleOp extends LinearOpMode {
 
     private boolean feedEnabled = false;
     private boolean manualOverride = false;
+    double resumeTPS,denom=0.0;
+    double pauseTPS;
 
     // ===== SolversLib InterpLUTs: Ty -> RPM and Ty -> HoodAngle(deg) =====
     private final InterpLUT tyToRPM = new InterpLUT();
-    private final InterpLUT tyToIDLERPM = new InterpLUT();
     private final InterpLUT tyToHoodDeg = new InterpLUT();
 
     // PIDF update hygiene (RT mode only)
@@ -117,7 +113,7 @@ public class EIABlue_TeleOp extends LinearOpMode {
     // NEW: rounding step (nearest 0.5 deg)
     private static final double HOOD_STEP_DEG = 0.5;
 
-    private double filteredRPM = 0.0;
+    private double filteredRPM = 0.0,curTPS=0.0;
 
     @Override
     public void runOpMode() {
@@ -222,9 +218,9 @@ public class EIABlue_TeleOp extends LinearOpMode {
             double hoodFinalDegTelemetry = 0.0;
 
             manualOverride =
-                    gamepad2.dpad_up ||
-                            gamepad2.dpad_left ||
-                            gamepad2.dpad_down;
+                    gamepad1.left_bumper ||
+                            gamepad1.dpad_left ||
+                            gamepad1.right_bumper;
 
             // ==========================
             // AUTO SHOOTING (RT + tag)
@@ -301,16 +297,6 @@ public class EIABlue_TeleOp extends LinearOpMode {
 
                     autoRPM = Math.min(autoRPM, MAX_RPM);
 
-                } else {
-
-                    autoRPM = 4500;
-
-                    if (gamepad2.dpad_up)         autoHoodDeg = PRESET_HIGH_DEG;
-                    else if (gamepad2.dpad_left) autoHoodDeg = PRESET_MID_DEG;
-                    else if (gamepad2.dpad_down) autoHoodDeg = PRESET_LOW_DEG;
-
-                    autoHoodDeg = roundToStep(autoHoodDeg, HOOD_STEP_DEG);
-                    shootServo.setPosition(degToPos(autoHoodDeg));
                 }
 
                 targetTPS = rpmToTicksPerSec(autoRPM);
@@ -323,10 +309,52 @@ public class EIABlue_TeleOp extends LinearOpMode {
                 frontRightMotor.setPower((y - x - turnCmd) / denom);
                 backRightMotor.setPower( (y + x - turnCmd) / denom);
 
+            } else if ((gamepad1.right_bumper||gamepad1.left_bumper) && tagSeen==false) {
+                if (gamepad1.right_bumper)
+                {
+                    autoRPM = 3950;
+                    autoHoodDeg = PRESET_HIGH_DEG;
+                    resumeTPS = rpmToTicksPerSec(autoRPM * RESUME_RPM_FRAC_FAR);
+                    pauseTPS = rpmToTicksPerSec(autoRPM * PAUSE_RPM_FRAC_FAR);
+                    curTPS = Math.abs(flywheelMotor.getVelocity());
+                    if (curTPS >= resumeTPS) {
+                        rollerIntakeMotor.setPower(INTAKE_POWER);
+                        rollerIntakeMotor2.setPower(INTAKE_POWER1);
+                        shootrollerServo.setPower(FEED_FORWARD);
+                    }
+                }
+                else if (gamepad1.left_bumper)
+                {
+                    autoRPM = 3050;
+                    autoHoodDeg = PRESET_LOW_DEG;
+                    resumeTPS = rpmToTicksPerSec(autoRPM * RESUME_RPM_FRAC);
+                    pauseTPS = rpmToTicksPerSec(autoRPM * PAUSE_RPM_FRAC);
+                    curTPS = Math.abs(flywheelMotor.getVelocity());
+                    if (curTPS >= resumeTPS) {
+                        rollerIntakeMotor.setPower(INTAKE_POWER);
+                        rollerIntakeMotor2.setPower(INTAKE_POWER1);
+                        shootrollerServo.setPower(FEED_FORWARD);
+                    }
+
+                }else
+                {
+                    autoHoodDeg = PRESET_MID_DEG;
+                }
+
+                autoHoodDeg = roundToStep(autoHoodDeg, HOOD_STEP_DEG);
+                shootServo.setPosition(degToPos(autoHoodDeg));
+
+                targetTPS = rpmToTicksPerSec(autoRPM);
+
+                denom = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1.0);
+                frontLeftMotor.setPower((y + x + turnCmd) / denom);
+                backLeftMotor.setPower( (y - x + turnCmd) / denom);
+                frontRightMotor.setPower((y - x - turnCmd) / denom);
+                backRightMotor.setPower( (y + x - turnCmd) / denom);
             } else {
                 resetPid();
 
-                double denom = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1.0);
+                denom = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1.0);
                 frontLeftMotor.setPower((y + x + rx) / denom);
                 backLeftMotor.setPower( (y - x + rx) / denom);
                 frontRightMotor.setPower( (y - x - rx) / denom);
@@ -336,7 +364,7 @@ public class EIABlue_TeleOp extends LinearOpMode {
             // ==========================
             // Flywheel / feed logic (RT/ LT / idle)
             // ==========================
-            if (rt) {
+            if (rt ) {
 
                 if (targetTPS > 1 && Math.abs(targetTPS - lastAppliedTPS) > 25) {
                     double kF = 19;
@@ -349,9 +377,7 @@ public class EIABlue_TeleOp extends LinearOpMode {
                 flywheelMotor.setVelocity(targetTPS);
                 flywheelMotor2.setVelocity(targetTPS);
 
-                double curTPS = Math.abs(flywheelMotor.getVelocity());
-                double resumeTPS;
-                double pauseTPS;
+                curTPS = Math.abs(flywheelMotor.getVelocity());
 
                 if ( ty < -14 ) {
                     resumeTPS = rpmToTicksPerSec(autoRPM * RESUME_RPM_FRAC_FAR);
@@ -368,7 +394,7 @@ public class EIABlue_TeleOp extends LinearOpMode {
                     rollerIntakeMotor.setPower(INTAKE_POWER);
                     rollerIntakeMotor2.setPower(INTAKE_POWER1);
                     shootrollerServo.setPower(FEED_FORWARD);
-                } else {
+                }else {
                     rollerIntakeMotor.setPower(0);
                     rollerIntakeMotor2.setPower(0);
                     shootrollerServo.setPower(0);
@@ -398,9 +424,14 @@ public class EIABlue_TeleOp extends LinearOpMode {
             }
 
             if (!rt && !manualOverride) {
-                if (gamepad2.dpad_down) shootServo.setPosition(degToPos(PRESET_LOW_DEG));
-                else if (gamepad2.dpad_left) shootServo.setPosition(degToPos(PRESET_MID_DEG));
-                else if (gamepad2.dpad_up) shootServo.setPosition(degToPos(PRESET_HIGH_DEG));
+                if (gamepad1.left_bumper)
+                {
+                    shootServo.setPosition(degToPos(PRESET_LOW_DEG));
+                }
+                else if (gamepad1.right_bumper)
+                {
+                    shootServo.setPosition(degToPos(PRESET_HIGH_DEG));
+                }
             }
 
             double curTPS_signed = flywheelMotor.getVelocity();
@@ -430,6 +461,7 @@ public class EIABlue_TeleOp extends LinearOpMode {
             telemetry.addData("tx", tx);
             telemetry.addData("ty", ty);
             telemetry.addData("tagSeen", tagSeen);
+            telemetry.addData("feedenabled", feedEnabled);
 
             telemetry.addData("hoodBaseDeg", "%.2f", hoodBaseDegTelemetry);
             telemetry.addData("hoodCompDeg", "%.2f", hoodCompDegTelemetry);

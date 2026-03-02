@@ -57,7 +57,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
  */
 
 @Autonomous(name = "V127EIARedWallFarAuto", group = "Decode2526")
-//@Disabled
+@Disabled
 public class V127EIARedWallFarAuto extends OpMode {
 
     private Follower follower;

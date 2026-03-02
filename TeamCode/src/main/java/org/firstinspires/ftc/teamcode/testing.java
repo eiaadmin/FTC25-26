@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -16,17 +15,14 @@ import com.qualcomm.robotcore.util.Range;
 
 import com.seattlesolvers.solverslib.util.InterpLUT;
 
-
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.Prism.Color;
 import org.firstinspires.ftc.teamcode.Prism.GoBildaPrismDriver;
 import org.firstinspires.ftc.teamcode.Prism.PrismAnimations;
 
-
-
-@TeleOp(name="EIABlueTeleOp", group="Linear OpMode")
-@Disabled
-public class EIABlue_TeleOp extends LinearOpMode {
+@TeleOp(name="testing", group="Linear OpMode")
+public class testing extends LinearOpMode {
 
     private DcMotor frontLeftMotor, backLeftMotor, frontRightMotor, backRightMotor;
     private DcMotorEx flywheelMotor, flywheelMotor2;
@@ -50,16 +46,15 @@ public class EIABlue_TeleOp extends LinearOpMode {
     private static final double GEAR_RATIO    = 1.0;
     private static final double MAX_RPM       = 4500.0;
 
-    private static final double IDLE_RPM       = 4150;//3900;
-    //double IDLE_RPM       = 3800;
+    private static final double IDLE_RPM       = 4150;//2700;
+
     private static final double RESUME_RPM_FRAC = 0.85;
     private static final double PAUSE_RPM_FRAC  = 0.80;
 
-    private static final double RESUME_RPM_FRAC_FAR = 0.93;
-    private static final double PAUSE_RPM_FRAC_FAR  = 0.88;
+    private static final double RESUME_RPM_FRAC_FAR = 0.85;
+    private static final double PAUSE_RPM_FRAC_FAR  = 0.80;
 
     private static final double INTAKE_POWER = 1.0;//.75;
-    private static final double INTAKE_POWER1 = 1.0;//.75;
     private static final double FEED_FORWARD = -1.0;
     private static final double FEED_REVERSE = +1.0;
 
@@ -88,7 +83,6 @@ public class EIABlue_TeleOp extends LinearOpMode {
 
     // ===== SolversLib InterpLUTs: Ty -> RPM and Ty -> HoodAngle(deg) =====
     private final InterpLUT tyToRPM = new InterpLUT();
-    private final InterpLUT tyToIDLERPM = new InterpLUT();
     private final InterpLUT tyToHoodDeg = new InterpLUT();
 
     // PIDF update hygiene (RT mode only)
@@ -146,7 +140,7 @@ public class EIABlue_TeleOp extends LinearOpMode {
         rollerIntakeMotor2 = hardwareMap.dcMotor.get("Rollerintakeexp2");
 
         limelight = hardwareMap.get(Limelight3A.class, "EIA Limelight");
-        limelight.pipelineSwitch(0);//0
+        limelight.pipelineSwitch(4);//0
 
         // Motor1: velocity loop available
         flywheelMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -240,10 +234,10 @@ public class EIABlue_TeleOp extends LinearOpMode {
                 //if from close on blue it goes to the left of the goal (towards the trashcans) increase -1.2 try -1
                 //if from close on blue it goes to the right of the goal (towards the table) decrease -1.2 try -1.5
                 if ( ll.getTy() <= -16.85 ) {
-                    tx = ll.getTx() - 5;
+                    tx = ll.getTx() + 1.8;
                 }
                 if ( ll.getTy() > -16.85 ){
-                    tx = ll.getTx() - 1.2;
+                    tx = ll.getTx() - 4;
                 }
 
                 ty = ll.getTy();
@@ -252,7 +246,6 @@ public class EIABlue_TeleOp extends LinearOpMode {
 
                     autoHoodDeg = tyToHoodDeg.get(ty);
                     autoRPM     = tyToRPM.get(ty);
-                    //IDLE_RPM    = tyToIDLERPM.get(ty);
 
                     hoodBaseDegTelemetry = autoHoodDeg;
 
@@ -366,7 +359,7 @@ public class EIABlue_TeleOp extends LinearOpMode {
 
                 if (feedEnabled && tagSeen && Math.abs(tx) <= AIM_TOL_DEG) {
                     rollerIntakeMotor.setPower(INTAKE_POWER);
-                    rollerIntakeMotor2.setPower(INTAKE_POWER1);
+                    rollerIntakeMotor2.setPower(INTAKE_POWER);
                     shootrollerServo.setPower(FEED_FORWARD);
                 } else {
                     rollerIntakeMotor.setPower(0);
@@ -456,7 +449,6 @@ public class EIABlue_TeleOp extends LinearOpMode {
         // MUST be strictly increasing X (Ty) values!
 
         // Ty -> RPM (ascending Ty)
-
         tyToRPM.add(-100, 3950);
         tyToRPM.add(-20, 3950);
         tyToRPM.add(-16.85, 3950);
@@ -494,28 +486,8 @@ public class EIABlue_TeleOp extends LinearOpMode {
         tyToHoodDeg.add(12, 8);//16.00
         tyToHoodDeg.add(100.00, 0);
 
-        // Ty -> IDLE_RPM (ascending Ty)
-        /*tyToIDLERPM.add(-100, 3900);
-        tyToIDLERPM.add(-20, 3900);
-        tyToIDLERPM.add(-16.85, 3900);
-        tyToIDLERPM.add(-16.84, 3250); //3400
-        tyToIDLERPM.add(-15.49, 3250);//3400
-        tyToIDLERPM.add(-15.22, 3250);//3400
-        tyToIDLERPM.add(-15.00, 3250);//3400
-        tyToIDLERPM.add(-14.9, 3200);
-        tyToIDLERPM.add(-14.6, 3200);
-        tyToIDLERPM.add(-14.23, 3200);
-        tyToIDLERPM.add( -13.13, 3175);
-        tyToIDLERPM.add( -11.44, 3000);
-        tyToIDLERPM.add( -8, 3000);
-        tyToIDLERPM.add(-4.75, 2750);
-        tyToIDLERPM.add(0, 2650);
-        tyToIDLERPM.add(12, 2650);
-        tyToIDLERPM.add(100.00, 2750);*/
-
         tyToRPM.createLUT();
         tyToHoodDeg.createLUT();
-        //tyToIDLERPM.createLUT();
     }
 
     // ======= dt-based tx PID helper =======

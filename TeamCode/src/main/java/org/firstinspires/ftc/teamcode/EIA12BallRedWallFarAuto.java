@@ -142,9 +142,10 @@ public class EIA12BallRedWallFarAuto extends OpMode {
 
         targetTPS = rpmToTicksPerSec(IDLE_RPM);
         flywheelMotor.setVelocity(targetTPS);
+        flywheelMotor1.setVelocity(targetTPS);
 
         double approxPower = Range.clip(targetTPS / rpmToTicksPerSec(TARGET_RPM), 0.0, 1.0);
-        flywheelMotor1.setPower(approxPower);
+        //flywheelMotor1.setPower(approxPower);
         rollerIntakeMotor.setPower(INTAKE_POWER);
         rollerIntakeMotor2.setPower(INTAKE_POWER);
         shootrollerServo.setPower(FEED_REVERSE);
@@ -183,9 +184,10 @@ public class EIA12BallRedWallFarAuto extends OpMode {
             feedEnabled = false;    // dip detected -> pause feeding until back up to RESUME_TPS
             targetTPS = rpmToTicksPerSec(IDLE_RPM);
             flywheelMotor.setVelocity(targetTPS);
+            flywheelMotor1.setVelocity(targetTPS);
 
             double approxPower = Range.clip(targetTPS / rpmToTicksPerSec(TARGET_RPM), 0.0, 1.0);
-            flywheelMotor1.setPower(approxPower);
+            //flywheelMotor1.setPower(approxPower);
         }
         if (feedEnabled) {
             rollerIntakeMotor.setPower(INTAKE_POWER);
@@ -273,7 +275,8 @@ public class EIA12BallRedWallFarAuto extends OpMode {
             case 0:
                 follower.followPath(scorePreload);
                 follower.setMaxPower(1.0);
-                flywheelMotor.setVelocity(TARGET_TPS);
+                flywheelMotor.setVelocity(targetTPS);
+                flywheelMotor1.setVelocity(targetTPS);
                 setPathState(1);
                 break;
             case 1:
@@ -353,13 +356,15 @@ public class EIA12BallRedWallFarAuto extends OpMode {
             double kF = 19;//14.9;
             PIDFCoefficients flywhlpidf = new PIDFCoefficients(FW_kP,FW_kI,FW_kD,kF);
             flywheelMotor.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER,flywhlpidf);
+            flywheelMotor1.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER,flywhlpidf);
             lastAppliedTPS=TARGET_TPS;
         }
         targetTPS = rpmToTicksPerSec(TARGET_RPM);
         flywheelMotor.setVelocity(targetTPS);
+        flywheelMotor1.setVelocity(targetTPS);
 
         double approxPower = Range.clip(targetTPS / rpmToTicksPerSec(TARGET_RPM), 0.0, 1.0);
-        flywheelMotor1.setPower(approxPower);
+        //flywheelMotor1.setPower(approxPower);
 
         if (pathState == -1 || pathState == -3 || pathState == -6 || pathState == -9) {
             enableShooter();
@@ -397,7 +402,7 @@ public class EIA12BallRedWallFarAuto extends OpMode {
         rollerIntakeMotor2 = hardwareMap.dcMotor.get("Rollerintakeexp2");
 
         flywheelMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        flywheelMotor1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        flywheelMotor1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         flywheelMotor.setDirection(DcMotor.Direction.REVERSE);
         flywheelMotor1.setDirection(DcMotor.Direction.REVERSE);
         rollerIntakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -424,9 +429,10 @@ public class EIA12BallRedWallFarAuto extends OpMode {
         setPathState(0);
         targetTPS = rpmToTicksPerSec(TARGET_RPM);
         flywheelMotor.setVelocity(targetTPS);
+        flywheelMotor1.setVelocity(targetTPS);
 
         double approxPower = Range.clip(targetTPS / rpmToTicksPerSec(TARGET_RPM), 0.0, 1.0);
-        flywheelMotor1.setPower(approxPower);
+        //flywheelMotor1.setPower(approxPower);
     }
 
     /** We do not use this because everything should automatically disable **/
