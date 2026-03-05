@@ -90,7 +90,7 @@ public class EIABlueSide15GoalAuto extends OpMode {
     private final Pose pickup3ControlPose = new Pose(72.26,53.67, Math.toRadians(-47));
     private final Pose pickup4Pose =new Pose(60.43, 73.67, Math.toRadians(-180)); // Grab Highest (First Set) of Artifacts from the Spike Mark.
     private final Pose pickup4grabPose = new Pose(35, 73.67, Math.toRadians(-180));
-    private final Pose pickup4scorePose = new Pose(64.8, 83.57, Math.toRadians(-45));
+    private final Pose pickup4scorePose = new Pose(65.8, 84.57, Math.toRadians(-45));
     private Path scorePreload;
     private PathChain grabPickup1, scorePickup1, grabPickup2, scorePickup2, grabPickup3, scorePickup3, grabPickup4, scorePickup4;
 
@@ -159,7 +159,7 @@ public class EIABlueSide15GoalAuto extends OpMode {
         rollerIntakeMotor.setPower(INTAKE_POWER_PPG);
         rollerIntakeMotor2.setPower(INTAKE_POWER_PPG);
         shootrollerServo.setPower(FEED_REVERSE);
-        hardstopServo.setPosition(0.55);
+        hardstopServo.setPosition(0.40);
 
         if(pathTimer.getElapsedTimeSeconds() > 2.60 && pathState==-2){
             setPathState(3);

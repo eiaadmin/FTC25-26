@@ -98,7 +98,7 @@ public class EIARed_TeleOp_With_Manual extends LinearOpMode {
     private final PrismAnimations.Solid solidGreen = new PrismAnimations.Solid(Color.GREEN);
     private final PrismAnimations.Solid solidBlue  = new PrismAnimations.Solid(Color.BLUE);
 
-    private static final double PROX_THRESHOLD_MM = 65.0;
+    private static final double PROX_THRESHOLD_MM = 45.0;//65.0;
 
     // =========================================================
     // RPM DIP COMPENSATION (hood trim based on RPM droop)

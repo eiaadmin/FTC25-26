@@ -25,7 +25,7 @@ import org.firstinspires.ftc.teamcode.Prism.PrismAnimations;
 
 
 @TeleOp(name="EIABlueTeleOp", group="Linear OpMode")
-@Disabled
+//@Disabled
 public class EIABlue_TeleOp extends LinearOpMode {
 
     private DcMotor frontLeftMotor, backLeftMotor, frontRightMotor, backRightMotor;
@@ -69,12 +69,12 @@ public class EIABlue_TeleOp extends LinearOpMode {
     private static final double FW_kD = 0.0;
 
     // ===== tx PID (dt-based, tolerance snap, clamped) =====
-    private static final double AIM_TOL_DEG = 1.5; // aligned if |tx| <= tolerance
+    private static final double AIM_TOL_DEG = 2.0; // aligned if |tx| <= tolerance
     private static final double MAX_TURN   = 0.6;  // clamp PID output to motor power
 
-    private static final double AIM_kP = 0.035;
+    private static final double AIM_kP = 0.020;
     private static final double AIM_kI = 0.000;
-    private static final double AIM_kD = 0.002;
+    private static final double AIM_kD = 0.003;
 
     private static final double I_ZONE_DEG = 5.0;
     private static final double I_MAX      = 0.2;
@@ -104,7 +104,7 @@ public class EIABlue_TeleOp extends LinearOpMode {
     private final PrismAnimations.Solid solidGreen = new PrismAnimations.Solid(Color.GREEN);
     private final PrismAnimations.Solid solidBlue  = new PrismAnimations.Solid(Color.BLUE);
 
-    private static final double PROX_THRESHOLD_MM = 65.0;
+    private static final double PROX_THRESHOLD_MM = 45.0;//65.0;
 
     // =========================================================
     // RPM DIP COMPENSATION (hood trim based on RPM droop)
@@ -485,9 +485,9 @@ public class EIABlue_TeleOp extends LinearOpMode {
         tyToHoodDeg.add(-15.00, 41);
         tyToHoodDeg.add(-14.9, 40);
         tyToHoodDeg.add(-14.6, 40);
-        tyToHoodDeg.add(-14.23, 36);
-        tyToHoodDeg.add( -13.13, 36);
-        tyToHoodDeg.add( -11.44, 34);//32
+        tyToHoodDeg.add(-14.23, 38);
+        tyToHoodDeg.add( -13.13, 38);
+        tyToHoodDeg.add( -11.44, 36);//32
         tyToHoodDeg.add( -8, 32);//29
         tyToHoodDeg.add(-4.75, 22);
         tyToHoodDeg.add(0, 16);

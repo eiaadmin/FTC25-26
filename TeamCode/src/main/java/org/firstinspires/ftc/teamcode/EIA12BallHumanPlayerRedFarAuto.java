@@ -56,9 +56,9 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
  * to the launch area and shoots it.
  */
 
-@Autonomous(name = "EIA12BallRedWallFarAuto", group = "Decode2526")
+@Autonomous(name = "EIA12BallHumanPlayerRedFarAuto", group = "Decode2526")
 
-public class EIA12BallRedWallFarAuto extends OpMode {
+public class EIA12BallHumanPlayerRedFarAuto extends OpMode {
 
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
@@ -66,12 +66,9 @@ public class EIA12BallRedWallFarAuto extends OpMode {
     private int pathState;
     private final Pose startPose = new Pose(79, 7.625,Math.toRadians(270)); // Start Pose of our robot.
     private final Pose scorePose = new Pose(89, 17, Math.toRadians(245));
-    private final Pose pickup1Pose = new Pose(79.5, 27,Math.toRadians(0));
-    private final Pose pickup1grabPose = new Pose(123, 27,Math.toRadians(0));
-    private final Pose pickup1scorePose = new Pose(89, 17, Math.toRadians(245));
-    private final Pose pickup2Pose = new Pose(100, 18.84,Math.toRadians(0));
-    private final Pose pickup2grabPose = new Pose(123, 0,Math.toRadians(60));
-    private final Pose pickup2grabPose4 = new Pose(110, 18,Math.toRadians(0));
+    private final Pose pickup2Pose = new Pose(100, 11.84,Math.toRadians(0));
+    private final Pose pickup2grabPose = new Pose(123, 1,Math.toRadians(60));
+    private final Pose pickup2grabPose4 = new Pose(110, 12,Math.toRadians(0));
     private final Pose scorePose2 = new Pose(89, 17, Math.toRadians(245));
     private final Pose pickup3Pose = new Pose(100, 8,Math.toRadians(0));
     private final Pose pickup3grabPose = new Pose(123, 12,Math.toRadians(0));
@@ -79,7 +76,7 @@ public class EIA12BallRedWallFarAuto extends OpMode {
     private final Pose scorePose3 = new Pose(89, 17, Math.toRadians(245));
     private final Pose leavePose = new Pose(100, 25,Math.toRadians(245));
     private Path scorePreload;
-    private PathChain grabPickup1, scorePickup1, grabPickup2, scorePickup2,landingPath,grabPickup3, scorePickup3;//, landingPath;
+    private PathChain grabPickup5, scorePickup5,grabPickup4, scorePickup4, grabPickup2, grabPickup3,scorePickup2,scorePickup3, landingPath;
 
 
     // -------- Mechanisms --------
@@ -155,12 +152,16 @@ public class EIA12BallRedWallFarAuto extends OpMode {
         if(pathTimer.getElapsedTimeSeconds() > 2.15 && pathState==-2){
             setPathState(3);
         }
-        if(pathTimer.getElapsedTimeSeconds() > 2.85 && pathState==-4){
+        if(pathTimer.getElapsedTimeSeconds() > 2.45 && pathState==-4){
             setPathState(6);
         }
-        if(pathTimer.getElapsedTimeSeconds() > 2.70 && pathState==-8){
+        if(pathTimer.getElapsedTimeSeconds() > 2.45 && pathState==-8){
             setPathState(9);
         }
+        if(pathTimer.getElapsedTimeSeconds() > 2.45 && pathState==-10){
+            setPathState(12);
+        }
+
 
     }
     public void enableShooter() {
@@ -203,16 +204,20 @@ public class EIA12BallRedWallFarAuto extends OpMode {
             setPathState(2);
             feedEnabled = false;
         }
-        if(pathTimer.getElapsedTimeSeconds() > 2.75 && pathState ==-3) {
+        if(pathTimer.getElapsedTimeSeconds() > 2.0 && pathState ==-3) {//3.25
             setPathState(5);
             feedEnabled = false;
         }
-        if(pathTimer.getElapsedTimeSeconds() > 2.75 && pathState ==-6) {
+        if(pathTimer.getElapsedTimeSeconds() > 2.0 && pathState ==-6) {//3.25
             setPathState(8);
             feedEnabled = false;
         }
-        if(pathTimer.getElapsedTimeSeconds() > 2.5 && pathState ==-9) {
+        if(pathTimer.getElapsedTimeSeconds() > 2.0 && pathState ==-9) {//3.25
             setPathState(11);
+            feedEnabled = false;
+        }
+        if(pathTimer.getElapsedTimeSeconds() > 2.0 && pathState ==-13) {
+            setPathState(14);
             feedEnabled = false;
         }
 
@@ -225,20 +230,8 @@ public class EIA12BallRedWallFarAuto extends OpMode {
         scorePreload = new Path(new BezierLine(startPose, scorePose));
         scorePreload.setLinearHeadingInterpolation(startPose.getHeading(), scorePose.getHeading());
 
-        grabPickup1 = follower.pathBuilder()
-                .addPath(new BezierLine(scorePose,  pickup1Pose))
-                .setConstantHeadingInterpolation(Math.toRadians(0))
-                .addPath(new BezierLine(pickup1Pose,  pickup1grabPose))
-                .setConstantHeadingInterpolation(Math.toRadians(0))
-                .build();
-
-        scorePickup1 = follower.pathBuilder()
-                .addPath(new BezierLine(pickup1grabPose,  pickup1scorePose))
-                .setConstantHeadingInterpolation(Math.toRadians(245))
-                .build();
-
         grabPickup2 = follower.pathBuilder()
-                .addPath(new BezierLine(pickup1scorePose,  pickup2Pose))
+                .addPath(new BezierLine(scorePose,  pickup2Pose))
                 .setConstantHeadingInterpolation(Math.toRadians(0))
                 .addPath(new BezierLine(pickup2Pose,  pickup2grabPose))
                 .setConstantHeadingInterpolation(Math.toRadians(0))
@@ -260,13 +253,43 @@ public class EIA12BallRedWallFarAuto extends OpMode {
                 .setConstantHeadingInterpolation(Math.toRadians(0))
                 .addPath(new BezierLine(pickup3grabPose,  pickup3grabPose2))
                 .setConstantHeadingInterpolation(Math.toRadians(0))
-                /*.addPath(new BezierLine(pickup3Pose,  pickup3grabPose))
+                .addPath(new BezierLine(pickup3Pose,  pickup3grabPose))
                 .setConstantHeadingInterpolation(Math.toRadians(0))
                 .addPath(new BezierLine(pickup3grabPose,  pickup3grabPose2))
-                .setConstantHeadingInterpolation(Math.toRadians(0))*/
+                .setConstantHeadingInterpolation(Math.toRadians(0))
                 .build();
 
         scorePickup3 = follower.pathBuilder()
+                .addPath(new BezierLine(pickup3grabPose2,  scorePose3))
+                .setConstantHeadingInterpolation(Math.toRadians(245))
+                .build();
+
+        grabPickup4 = follower.pathBuilder()
+                .addPath(new BezierLine(scorePose2,  pickup3Pose))
+                .setConstantHeadingInterpolation(Math.toRadians(0))
+                .addPath(new BezierLine(pickup3Pose,  pickup3grabPose))
+                .setConstantHeadingInterpolation(Math.toRadians(0))
+                .addPath(new BezierLine(pickup3grabPose,  pickup3grabPose2))
+                .setConstantHeadingInterpolation(Math.toRadians(0))
+                .addPath(new BezierLine(pickup3Pose,  pickup3grabPose))
+                .setConstantHeadingInterpolation(Math.toRadians(0))
+                .build();
+
+        scorePickup4 = follower.pathBuilder()
+                .addPath(new BezierLine(pickup3grabPose2,  scorePose3))
+                .setConstantHeadingInterpolation(Math.toRadians(245))
+                .build();
+
+        grabPickup5 = follower.pathBuilder()
+                .addPath(new BezierLine(scorePose2,  pickup3Pose))
+                .setConstantHeadingInterpolation(Math.toRadians(0))
+                .addPath(new BezierLine(pickup3Pose,  pickup3grabPose))
+                .setConstantHeadingInterpolation(Math.toRadians(0))
+                //.addPath(new BezierLine(pickup3grabPose,  pickup3grabPose2))
+                //.setConstantHeadingInterpolation(Math.toRadians(0))
+                .build();
+
+        scorePickup5 = follower.pathBuilder()
                 .addPath(new BezierLine(pickup3grabPose2,  scorePose3))
                 .setConstantHeadingInterpolation(Math.toRadians(245))
                 .build();
@@ -292,15 +315,16 @@ public class EIA12BallRedWallFarAuto extends OpMode {
                 setPathState(-1);
                 break;
             case 2:
-                follower.followPath(grabPickup1,true);
+                follower.followPath(grabPickup2,true);
                 follower.setMaxPower(1.0);
                 intakeArtifacts();
                 setPathState(-2);
                 break;
             case 3:
-                //rollerIntakeMotor.setPower(INTAKE_POWER_PPG);
-                follower.followPath(scorePickup1, true);
+                follower.followPath(scorePickup2, true);
                 follower.setMaxPower(1.0);
+                flywheelMotor.setVelocity(targetTPS);
+                flywheelMotor1.setVelocity(targetTPS);
                 setPathState(4);
                 break;
             case 4:
@@ -308,14 +332,16 @@ public class EIA12BallRedWallFarAuto extends OpMode {
                 setPathState(-3);
                 break;
             case 5:
-                follower.followPath(grabPickup2,true);
-                follower.setMaxPower(0.65);
+                follower.followPath(grabPickup3,true);
+                follower.setMaxPower(0.75);
                 intakeArtifacts();
                 setPathState(-4);
                 break;
             case 6:
-                follower.followPath(scorePickup2, true);
+                follower.followPath(scorePickup3, true);
                 follower.setMaxPower(1.0);
+                flywheelMotor.setVelocity(targetTPS);
+                flywheelMotor1.setVelocity(targetTPS);
                 setPathState(7);
                 break;
             case 7:
@@ -323,13 +349,13 @@ public class EIA12BallRedWallFarAuto extends OpMode {
                 setPathState(-6);
                 break;
             case 8:
-                follower.followPath(grabPickup3,true);
+                follower.followPath(grabPickup4,true);
                 follower.setMaxPower(0.75);
                 intakeArtifacts();
                 setPathState(-8);
                 break;
             case 9:
-                follower.followPath(scorePickup3, true);
+                follower.followPath(scorePickup4, true);
                 follower.setMaxPower(1.0);
                 setPathState(10);
                 break;
@@ -338,12 +364,27 @@ public class EIA12BallRedWallFarAuto extends OpMode {
                 setPathState(-9);
                 break;
             case 11:
+                follower.followPath(grabPickup5,true);
+                follower.setMaxPower(0.75);
+                intakeArtifacts();
+                setPathState(-10);
+                break;
+            case 12:
+                follower.followPath(scorePickup5, true);
+                follower.setMaxPower(1.0);
+                setPathState(13);
+                break;
+            case 13:
+                enableShooter();
+                setPathState(-13);
+                break;
+            case 14:
                 flywheelMotor.setVelocity(0.0);
                 flywheelMotor1.setVelocity(0.0);
                 shootrollerServo.setPower(FEED_REVERSE);
                 follower.followPath(landingPath, true);
                 follower.setMaxPower(1.0);
-                setPathState(-11);
+                setPathState(-14);
                 break;
         }
     }
@@ -374,9 +415,9 @@ public class EIA12BallRedWallFarAuto extends OpMode {
         double approxPower = Range.clip(targetTPS / rpmToTicksPerSec(TARGET_RPM), 0.0, 1.0);
         //flywheelMotor1.setPower(approxPower);
 
-        if (pathState == -1 || pathState == -3 || pathState == -6 || pathState == -9) {
+        if (pathState == -1 || pathState == -3 || pathState == -6 || pathState == -9|| pathState == -13) {
             enableShooter();
-        }else if (pathState == -2 || pathState == -4 || pathState == -8 ){
+        }else if (pathState == -2 || pathState == -4 || pathState == -8 || pathState == -10){
             intakeArtifacts();
         }else {
             autonomousPathUpdate();

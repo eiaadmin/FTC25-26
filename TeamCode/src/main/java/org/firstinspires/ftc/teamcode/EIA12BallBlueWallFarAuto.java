@@ -70,11 +70,12 @@ public class EIA12BallBlueWallFarAuto extends OpMode {
     private final Pose pickup1grabPose = new Pose(21, 27.5,Math.toRadians(-180));
     private final Pose pickup1scorePose = new Pose(55, 19, Math.toRadians(291));
     private final Pose pickup2Pose = new Pose(36.05, 18.84,Math.toRadians(-180));
-    private final Pose pickup2grabPose = new Pose(21, 0,Math.toRadians(-90));
+    private final Pose pickup2grabPose = new Pose(18, 1,Math.toRadians(-90));
     private final Pose pickup2grabPose4 = new Pose(30, 15,Math.toRadians(-180));
     private final Pose scorePose2 = new Pose(55, 19, Math.toRadians(291));
-    private final Pose pickup3Pose = new Pose(25, 15,Math.toRadians(-220));
-    private final Pose pickup3grabPose = new Pose(25, 10,Math.toRadians(-220));
+    private final Pose pickup3Pose = new Pose(30, 8,Math.toRadians(-180));
+    private final Pose pickup3grabPose = new Pose(20, 12,Math.toRadians(-180));
+    private final Pose pickup3grabPose2 = new Pose(30, 10,Math.toRadians(-180));
     private final Pose scorePose3 = new Pose(55, 18, Math.toRadians(291));
     private final Pose leavePose = new Pose(65, 30,Math.toRadians(-180));
     private Path scorePreload;
@@ -102,8 +103,8 @@ public class EIA12BallBlueWallFarAuto extends OpMode {
     private static final double GEAR_RATIO    = 1.0;   // motor revs per flywheel rev
 
     // RPM targets
-    private static final double TARGET_RPM    = 3950;//4500;//4500.0; // as requested
-    private static final double IDLE_RPM       = 3900;
+    private static final double TARGET_RPM    = 4050;//3950;//4500;//4500.0; // as requested
+    private static final double IDLE_RPM       = 4000;//3900;
     double targetTPS = 0;
 
     // Feeding thresholds (hysteresis)
@@ -148,12 +149,12 @@ public class EIA12BallBlueWallFarAuto extends OpMode {
         rollerIntakeMotor.setPower(INTAKE_POWER);
         rollerIntakeMotor2.setPower(INTAKE_POWER);
         shootrollerServo.setPower(FEED_REVERSE);
-        hardstopServo.setPosition(0.55);
+        hardstopServo.setPosition(0.40);
 
-        if(pathTimer.getElapsedTimeSeconds() > 2.55 && pathState==-2){
+        if(pathTimer.getElapsedTimeSeconds() > 2.15 && pathState==-2){
             setPathState(3);
         }
-        if(pathTimer.getElapsedTimeSeconds() > 2.80 && pathState==-4){
+        if(pathTimer.getElapsedTimeSeconds() > 2.60 && pathState==-4){
             setPathState(6);
         }
         if(pathTimer.getElapsedTimeSeconds() > 2.65 && pathState==-8){
@@ -201,15 +202,15 @@ public class EIA12BallBlueWallFarAuto extends OpMode {
             setPathState(2);
             feedEnabled = false;
         }
-        if(pathTimer.getElapsedTimeSeconds() > 3 && pathState ==-3) {//3.25
+        if(pathTimer.getElapsedTimeSeconds() > 2.75 && pathState ==-3) {//3.25
             setPathState(5);
             feedEnabled = false;
         }
-        if(pathTimer.getElapsedTimeSeconds() > 3 && pathState ==-6) {//3.25
+        if(pathTimer.getElapsedTimeSeconds() > 2.75 && pathState ==-6) {//3.25
             setPathState(8);
             feedEnabled = false;
         }
-        if(pathTimer.getElapsedTimeSeconds() > 2 && pathState ==-9) {
+        if(pathTimer.getElapsedTimeSeconds() > 2.5 && pathState ==-9) {
             setPathState(11);
             feedEnabled = false;
         }
@@ -253,13 +254,19 @@ public class EIA12BallBlueWallFarAuto extends OpMode {
 
         grabPickup3 = follower.pathBuilder()
                 .addPath(new BezierLine(scorePose2,  pickup3Pose))
-                .setConstantHeadingInterpolation(Math.toRadians(-215))
+                .setConstantHeadingInterpolation(Math.toRadians(-180))
                 .addPath(new BezierLine(pickup3Pose,  pickup3grabPose))
-                .setConstantHeadingInterpolation(Math.toRadians(-215))
+                .setConstantHeadingInterpolation(Math.toRadians(-180))
+                .addPath(new BezierLine(pickup3grabPose,  pickup3grabPose2))
+                .setConstantHeadingInterpolation(Math.toRadians(-160))
+                /*.addPath(new BezierLine(pickup3Pose,  pickup3grabPose))
+                .setConstantHeadingInterpolation(Math.toRadians(-180))
+                .addPath(new BezierLine(pickup3grabPose,  pickup3grabPose2))
+                .setConstantHeadingInterpolation(Math.toRadians(-160))*/
                 .build();
 
         scorePickup3 = follower.pathBuilder()
-                .addPath(new BezierLine(pickup3grabPose,  scorePose3))
+                .addPath(new BezierLine(pickup3grabPose2,  scorePose3))
                 .setConstantHeadingInterpolation(Math.toRadians(291))
                 .build();
 
@@ -408,7 +415,7 @@ public class EIA12BallBlueWallFarAuto extends OpMode {
         rollerIntakeMotor2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         rollerIntakeMotor2.setDirection(DcMotorSimple.Direction.REVERSE);
         hardstopServo    = hardwareMap.servo.get("hardstopServo");
-        hardstopServo.setPosition(0.55);
+        hardstopServo.setPosition(0.40);
 
         buildPaths();
         follower.setStartingPose(startPose);

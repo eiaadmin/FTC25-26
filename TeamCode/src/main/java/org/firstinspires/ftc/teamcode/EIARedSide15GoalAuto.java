@@ -83,12 +83,12 @@ public class EIARedSide15GoalAuto extends OpMode {
     private final Pose pickup1ControlPose = new Pose(66, 65, Math.toRadians(-140));
     private final Pose releasegatePose = new Pose(77.4, 50, Math.toRadians(0)); // Score Highest (First Set) of Artifacts from the Spike Mark.
     private final Pose releasegateEnablePose = new Pose(108,50, Math.toRadians(0));
-    private final Pose pickup2Pose = new Pose(122,33,Math.toRadians(29)); // Score Highest (First Set) of Artifacts from the Spike Mark.
+    private final Pose pickup2Pose = new Pose(122,31,Math.toRadians(29)); // Score Highest (First Set) of Artifacts from the Spike Mark.
     private final Pose pickup2scorePose = new Pose(84.4, 80.1, Math.toRadians(-135));
     private final Pose pickup2ControlPose = new Pose(66, 65, Math.toRadians(-140));
     private final Pose releasegatetwicePose = new Pose(77.4, 50, Math.toRadians(0)); // Score Highest (First Set) of Artifacts from the Spike Mark.
     private final Pose releasegatetwiceEnablePose = new Pose(108,50, Math.toRadians(0));
-    private final Pose pickup3Pose = new Pose(122,33,Math.toRadians(29)); // Score Highest (First Set) of Artifacts from the Spike Mark.
+    private final Pose pickup3Pose = new Pose(122,31,Math.toRadians(29)); // Score Highest (First Set) of Artifacts from the Spike Mark.
     private final Pose pickup3scorePose = new Pose(84.4, 80.1, Math.toRadians(-135));
     private final Pose pickup3ControlPose = new Pose(66, 65, Math.toRadians(-140));
     private final Pose pickup4Pose =new Pose(82.75,72, Math.toRadians(0)); // Grab Highest (First Set) of Artifacts from the Spike Mark.
@@ -161,7 +161,7 @@ public class EIARedSide15GoalAuto extends OpMode {
         rollerIntakeMotor.setPower(INTAKE_POWER_PPG);
         rollerIntakeMotor2.setPower(INTAKE_POWER_PPG);
         shootrollerServo.setPower(FEED_REVERSE);
-        hardstopServo.setPosition(0.55);
+        hardstopServo.setPosition(0.40);
 
         if(pathTimer.getElapsedTimeSeconds() > 2.60 && pathState==-2){
             setPathState(3);
@@ -306,7 +306,7 @@ public class EIARedSide15GoalAuto extends OpMode {
                 /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
                 if(!follower.isBusy() ) {
                     follower.followPath(grabPickup1,true);
-                    follower.setMaxPower(0.90);
+                    follower.setMaxPower(1.0);
                     /* Score Preload */
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
                     intakeArtifacts();
@@ -333,7 +333,7 @@ public class EIARedSide15GoalAuto extends OpMode {
                     /* Score Preload */
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
                     follower.followPath(grabPickup2,true);
-                    follower.setMaxPower(0.9);//0.9
+                    follower.setMaxPower(1.0);//0.9
                     intakeArtifacts();
                     setPathState(-4);
                 }
@@ -360,7 +360,7 @@ public class EIARedSide15GoalAuto extends OpMode {
                     /* Score Preload */
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
                     follower.followPath(grabPickup3,true);
-                    follower.setMaxPower(0.9);//0.85
+                    follower.setMaxPower(1.0);//0.85
                     intakeArtifacts();
                     setPathState(-7);
                 }
@@ -474,7 +474,7 @@ public class EIARedSide15GoalAuto extends OpMode {
         rollerIntakeMotor = hardwareMap.dcMotor.get("Rollerintakeexp1");
         rollerIntakeMotor2 = hardwareMap.dcMotor.get("Rollerintakeexp2");
         hardstopServo    = hardwareMap.servo.get("hardstopServo");
-        hardstopServo.setPosition(0.55);
+        hardstopServo.setPosition(0.40);
 
         flywheelMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         rollerIntakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
