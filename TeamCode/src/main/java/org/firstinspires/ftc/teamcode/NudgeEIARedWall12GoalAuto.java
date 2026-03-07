@@ -78,12 +78,12 @@ public class NudgeEIARedWall12GoalAuto extends OpMode {
     private final Pose pickup1Pose =new Pose(82.75,72, Math.toRadians(0)); // Grab Highest (First Set) of Artifacts from the Spike Mark.
     private final Pose pickup1grabPose = new Pose(110, 72, Math.toRadians(0));
     private final Pose releasegatePose = new Pose(102, 65, Math.toRadians(0)); // Score Highest (First Set) of Artifacts from the Spike Mark.
-    private final Pose releasegateEnablePose = new Pose(121,65, Math.toRadians(0));
-    private final Pose pickup2Pose = new Pose(83.4, 80.1, Math.toRadians(-140)); // Score Highest (First Set) of Artifacts from the Spike Mark.
+    private final Pose releasegateEnablePose = new Pose(125,65, Math.toRadians(0));
+    private final Pose pickup2Pose = new Pose(83.4, 80.1, Math.toRadians(-135)); // Score Highest (First Set) of Artifacts from the Spike Mark.
     private final Pose pickup2ControlPose = new Pose(66, 65, Math.toRadians(-135));
     private final Pose pickup3Pose = new Pose(82.75, 46.5, Math.toRadians(0));
     private final Pose pickup3grabPose = new Pose(120, 46.5, Math.toRadians(0));//53.67
-    private final Pose pickup4Pose = new Pose(83.4, 80.1, Math.toRadians(-140)); // Score Middle (Second Set) of Artifacts from the Spike Mark.
+    private final Pose pickup4Pose = new Pose(83.4, 80.1, Math.toRadians(-135)); // Score Middle (Second Set) of Artifacts from the Spike Mark.
     private final Pose pickup4ControlPose = new Pose(66, 65, Math.toRadians(-135));
     private final Pose pickup5Pose = new Pose(79.5, 27,Math.toRadians(0));
     private final Pose pickup5grabPose = new Pose(125.7, 27,Math.toRadians(0));
@@ -105,7 +105,7 @@ public class NudgeEIARedWall12GoalAuto extends OpMode {
     private static final double HOOD_MIN_DEG = 0.0;
     private static final double HOOD_MAX_DEG = 40.0;
 
-    private double PRESET_HIGH_DEG = 37;
+    private double PRESET_HIGH_DEG = 35;
 
     // -------- Flywheel velocity control --------
     private static final double TICKS_PER_REV = 28.0;  // from your motor specs
@@ -117,7 +117,7 @@ public class NudgeEIARedWall12GoalAuto extends OpMode {
     double targetTPS = 0;
 
     private double lastAppliedTPS;
-    private static final double FW_kP=300,FW_kI=0.0,FW_kD=0.0;//310//FW_kP=8.5,FW_kI=0.0,FW_kD=0.0;
+    private static final double FW_kP=440,FW_kI=0.0,FW_kD=0.0;//310//FW_kP=8.5,FW_kI=0.0,FW_kD=0.0;
 
     // Feeding thresholds (hysteresis)
     private static final double RESUME_RPM_FRAC = 0.90; // resume feed at >= 85% of target
@@ -159,9 +159,9 @@ public class NudgeEIARedWall12GoalAuto extends OpMode {
         rollerIntakeMotor.setPower(INTAKE_POWER_PPG);
         rollerIntakeMotor2.setPower(INTAKE_POWER_PPG);
         shootrollerServo.setPower(FEED_REVERSE);
-        hardstopServo.setPosition(0.55);
+        hardstopServo.setPosition(0.40);
 
-        if(pathTimer.getElapsedTimeSeconds() > 3.85 && pathState==-2){
+        if(pathTimer.getElapsedTimeSeconds() > 3.90 && pathState==-2){
             setPathState(3);
         }
         if(pathTimer.getElapsedTimeSeconds() > 3.45 && pathState==-4){
@@ -393,7 +393,7 @@ public class NudgeEIARedWall12GoalAuto extends OpMode {
         // These loop the movements of the robot, these must be called continuously in order to work
         follower.update();
         if (TARGET_TPS > 1 && Math.abs(TARGET_TPS-lastAppliedTPS)>25){
-            double kF = 11;//14.9;
+            double kF = 19.0;//14.9;
             PIDFCoefficients flywhlpidf = new PIDFCoefficients(FW_kP,FW_kI,FW_kD,kF);
             flywheelMotor.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER,flywhlpidf);
             lastAppliedTPS=TARGET_TPS;
@@ -441,7 +441,7 @@ public class NudgeEIARedWall12GoalAuto extends OpMode {
         rollerIntakeMotor = hardwareMap.dcMotor.get("Rollerintakeexp1");
         rollerIntakeMotor2 = hardwareMap.dcMotor.get("Rollerintakeexp2");
         hardstopServo    = hardwareMap.servo.get("hardstopServo");
-        hardstopServo.setPosition(0.55);
+        //hardstopServo.setPosition(0.55);
 
         flywheelMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         rollerIntakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);

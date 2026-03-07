@@ -97,15 +97,15 @@ public class EIA12BallRedWallFarAuto extends OpMode {
     private static final double HOOD_MIN_DEG = 0.0;
     private static final double HOOD_MAX_DEG = 40;
 
-    private double PRESET_HIGH_DEG = 40;//35;
+    private double PRESET_HIGH_DEG = 39;//35;
 
     // -------- Flywheel velocity control --------
     private static final double TICKS_PER_REV = 28.0;  // from your motor specs
     private static final double GEAR_RATIO    = 1.0;   // motor revs per flywheel rev
 
     // RPM targets
-    private static final double TARGET_RPM    =4050;//3950;//4500;//4500.0; // as requested
-    private static final double IDLE_RPM      = 4000;//3900;  // as requested
+    private static final double TARGET_RPM    =4100;//4050//3950;//4500;//4500.0; // as requested
+    private static final double IDLE_RPM      = 4050;//3900;  // as requested
     double targetTPS = 0;
 
     // Feeding thresholds (hysteresis)
@@ -203,7 +203,7 @@ public class EIA12BallRedWallFarAuto extends OpMode {
             setPathState(2);
             feedEnabled = false;
         }
-        if(pathTimer.getElapsedTimeSeconds() > 2.75 && pathState ==-3) {
+        if(pathTimer.getElapsedTimeSeconds() > 2.85 && pathState ==-3) {
             setPathState(5);
             feedEnabled = false;
         }

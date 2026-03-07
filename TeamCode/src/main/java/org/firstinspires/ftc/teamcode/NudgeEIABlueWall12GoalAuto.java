@@ -108,7 +108,7 @@ public class NudgeEIABlueWall12GoalAuto extends OpMode {
     private static final double HOOD_MIN_DEG = 0.0;
     private static final double HOOD_MAX_DEG = 40;
 
-    private double PRESET_HIGH_DEG = 37;
+    private double PRESET_HIGH_DEG = 35;
 
     // -------- Flywheel velocity control --------
     private static final double TICKS_PER_REV = 28.0;  // from your motor specs
@@ -134,7 +134,7 @@ public class NudgeEIABlueWall12GoalAuto extends OpMode {
     private static final double FEED_FORWARD = -1.0; // forward
     private static final double FEED_REVERSE = +1.0; // reverse
 
-    private static final double FW_kP=350,FW_kI=0.0,FW_kD=0.0;//300//FW_kP=8.5,FW_kI=0.0,FW_kD=0.0;
+    private static final double FW_kP=440,FW_kI=0.0,FW_kD=0.0;//300//FW_kP=8.5,FW_kI=0.0,FW_kD=0.0;
 
     // State: feeding allowed while RT is held
     private boolean feedEnabled = false;
@@ -162,7 +162,7 @@ public class NudgeEIABlueWall12GoalAuto extends OpMode {
         rollerIntakeMotor.setPower(INTAKE_POWER_PPG);
         rollerIntakeMotor2.setPower(INTAKE_POWER_PPG);
         shootrollerServo.setPower(FEED_REVERSE);
-        hardstopServo.setPosition(0.55);
+        hardstopServo.setPosition(0.40);
 
         if(pathTimer.getElapsedTimeSeconds() > 3.85 && pathState==-2){
             setPathState(3);
@@ -406,13 +406,13 @@ public class NudgeEIABlueWall12GoalAuto extends OpMode {
         // These loop the movements of the robot, these must be called continuously in order to work
         follower.update();
         if (TARGET_TPS > 1 && Math.abs(TARGET_TPS-lastAppliedTPS)>25){
-            double kF = 11.0;//14.9;
+            double kF = 19.0;//11.0;//14.9;
             PIDFCoefficients flywhlpidf = new PIDFCoefficients(FW_kP,FW_kI,FW_kD,kF);
             flywheelMotor.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER,flywhlpidf);
             lastAppliedTPS=TARGET_TPS;
         }
         flywheelMotor.setVelocity(TARGET_TPS);
-        double approxPower = Range.clip(TARGET_TPS / rpmToTicksPerSec(3500), 0,1);
+        double approxPower = Range.clip(TARGET_TPS / rpmToTicksPerSec(TARGET_RPM), 0,1);
         flywheelMotor1.setPower(approxPower);
         if (pathState == -1 || pathState == -3 || pathState == -6 || pathState == -9) {
             enableShooter();
@@ -456,10 +456,10 @@ public class NudgeEIABlueWall12GoalAuto extends OpMode {
         rollerIntakeMotor2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         rollerIntakeMotor2.setDirection(DcMotor.Direction.REVERSE);
         hardstopServo    = hardwareMap.servo.get("hardstopServo");
-        hardstopServo.setPosition(0.55);
+        //hardstopServo.setPosition(0.40);
         buildPaths();
         follower.setStartingPose(startPose);
-        hardstopServo.setPosition(0.55);
+        //hardstopServo.setPosition(0.55);
     }
 
     /** This method is called continuously after Init while waiting for "play". **/

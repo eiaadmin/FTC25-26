@@ -65,15 +65,15 @@ public class EIA12BallHumanPlayerBlueFarAuto extends OpMode {
     private final ElapsedTime runtime = new ElapsedTime();
     private int pathState;
     private final Pose startPose = new Pose(65, 7.625,Math.toRadians(270)); // Start Pose of our robot.
-    private final Pose scorePose = new Pose(55, 19, Math.toRadians(291));
-    private final Pose pickup2Pose = new Pose(36.05, 11.84,Math.toRadians(-180));
-    private final Pose pickup2grabPose = new Pose(18, 1,Math.toRadians(-90));
-    private final Pose pickup2grabPose4 = new Pose(30, 12,Math.toRadians(-180));
-    private final Pose scorePose2 = new Pose(55, 19, Math.toRadians(291));
-    private final Pose pickup3Pose = new Pose(30, 8,Math.toRadians(-180));
-    private final Pose pickup3grabPose = new Pose(20, 12,Math.toRadians(-180));
-    private final Pose pickup3grabPose2 = new Pose(30, 12,Math.toRadians(-180));
-    private final Pose scorePose3 = new Pose(55, 18, Math.toRadians(291));
+    private final Pose scorePose = new Pose(55, 19, Math.toRadians(295));
+    private final Pose pickup2Pose = new Pose(33.05, 4.84,Math.toRadians(-180));
+    private final Pose pickup2grabPose = new Pose(18, 10,Math.toRadians(-180));
+    private final Pose pickup2grabPose4 = new Pose(30, 10,Math.toRadians(-180));
+    private final Pose scorePose2 = new Pose(55, 19, Math.toRadians(295));
+    private final Pose pickup3Pose = new Pose(30, 4.84,Math.toRadians(-180));
+    private final Pose pickup3grabPose = new Pose(20, 10,Math.toRadians(-180));
+    private final Pose pickup3grabPose2 = new Pose(30, 10,Math.toRadians(-180));
+    private final Pose scorePose3 = new Pose(55, 18, Math.toRadians(295));
     private final Pose leavePose = new Pose(65, 30,Math.toRadians(-180));
     private Path scorePreload;
     private PathChain grabPickup5, scorePickup5,grabPickup4, scorePickup4, grabPickup2, grabPickup21,scorePickup2,landingPath,grabPickup3, scorePickup3;;//, grabPickup3, scorePickup3, landingPath;
@@ -93,15 +93,15 @@ public class EIA12BallHumanPlayerBlueFarAuto extends OpMode {
     private static final double HOOD_MIN_DEG = 0.0;
     private static final double HOOD_MAX_DEG = 40;
 
-    private double PRESET_HIGH_DEG = 40;
+    private double PRESET_HIGH_DEG = 39;
 
     // -------- Flywheel velocity control --------
     private static final double TICKS_PER_REV = 28.0;  // from your motor specs
     private static final double GEAR_RATIO    = 1.0;   // motor revs per flywheel rev
 
     // RPM targets
-    private static final double TARGET_RPM    = 4050;//3950;//4500;//4500.0; // as requested
-    private static final double IDLE_RPM       = 4000;//3900;
+    private static final double TARGET_RPM    = 4100;//3950;//4500;//4500.0; // as requested
+    private static final double IDLE_RPM       = 4050;//3900;
     double targetTPS = 0;
 
     // Feeding thresholds (hysteresis)
@@ -151,13 +151,13 @@ public class EIA12BallHumanPlayerBlueFarAuto extends OpMode {
         if(pathTimer.getElapsedTimeSeconds() > 2.15 && pathState==-2){
             setPathState(3);
         }
-        if(pathTimer.getElapsedTimeSeconds() > 2.45 && pathState==-4){
+        if(pathTimer.getElapsedTimeSeconds() > 2.30 && pathState==-4){
             setPathState(6);
         }
-        if(pathTimer.getElapsedTimeSeconds() > 2.45 && pathState==-8){
+        if(pathTimer.getElapsedTimeSeconds() > 2.30 && pathState==-8){
             setPathState(9);
         }
-        if(pathTimer.getElapsedTimeSeconds() > 2.45 && pathState==-10){
+        if(pathTimer.getElapsedTimeSeconds() > 2.30 && pathState==-10){
             setPathState(12);
         }
 
@@ -202,19 +202,19 @@ public class EIA12BallHumanPlayerBlueFarAuto extends OpMode {
             setPathState(2);
             feedEnabled = false;
         }
-        if(pathTimer.getElapsedTimeSeconds() > 2.0 && pathState ==-3) {//3.25
+        if(pathTimer.getElapsedTimeSeconds() > 1.80 && pathState ==-3) {//3.25
             setPathState(5);
             feedEnabled = false;
         }
-        if(pathTimer.getElapsedTimeSeconds() > 2.0 && pathState ==-6) {//2.45
+        if(pathTimer.getElapsedTimeSeconds() > 1.80 && pathState ==-6) {//2.45
             setPathState(8);
             feedEnabled = false;
         }
-        if(pathTimer.getElapsedTimeSeconds() > 2.0 && pathState ==-9) {//2.45
+        if(pathTimer.getElapsedTimeSeconds() > 1.80 && pathState ==-9) {//2.45
             setPathState(11);
             feedEnabled = false;
         }
-        if(pathTimer.getElapsedTimeSeconds() > 2.0 && pathState ==-13) {
+        if(pathTimer.getElapsedTimeSeconds() > 1.80 && pathState ==-13) {
             setPathState(14);
             feedEnabled = false;
         }
@@ -233,15 +233,15 @@ public class EIA12BallHumanPlayerBlueFarAuto extends OpMode {
                 .setConstantHeadingInterpolation(Math.toRadians(-180))
                 .addPath(new BezierLine(pickup2Pose,  pickup2grabPose))
                 .setConstantHeadingInterpolation(Math.toRadians(-180))
-                .addPath(new BezierPoint(pickup2grabPose))
+                /*.addPath(new BezierPoint(pickup2grabPose))
                 .setConstantHeadingInterpolation(Math.toRadians(-160))
                 .addPath(new BezierPoint(pickup2grabPose4))
-                .setConstantHeadingInterpolation(Math.toRadians(160))
+                .setConstantHeadingInterpolation(Math.toRadians(160))*/
                 .build();
 
         scorePickup2 = follower.pathBuilder()
                 .addPath(new BezierLine(pickup2grabPose4,  scorePose2))
-                .setConstantHeadingInterpolation(Math.toRadians(291))
+                .setConstantHeadingInterpolation(Math.toRadians(295))
                 .build();
 
         grabPickup3 = follower.pathBuilder()
@@ -250,48 +250,48 @@ public class EIA12BallHumanPlayerBlueFarAuto extends OpMode {
                 .addPath(new BezierLine(pickup3Pose,  pickup3grabPose))
                 .setConstantHeadingInterpolation(Math.toRadians(-180))
                 .addPath(new BezierLine(pickup3grabPose,  pickup3grabPose2))
-                .setConstantHeadingInterpolation(Math.toRadians(-160))
-                .addPath(new BezierLine(pickup3Pose,  pickup3grabPose))
+                .setConstantHeadingInterpolation(Math.toRadians(-145))
+                /*.addPath(new BezierLine(pickup3Pose,  pickup3grabPose))
                 .setConstantHeadingInterpolation(Math.toRadians(-180))
                 .addPath(new BezierLine(pickup3grabPose,  pickup3grabPose2))
-                .setConstantHeadingInterpolation(Math.toRadians(-160))
+                .setConstantHeadingInterpolation(Math.toRadians(-160))*/
                 .build();
 
         scorePickup3 = follower.pathBuilder()
                 .addPath(new BezierLine(pickup3grabPose2,  scorePose3))
-                .setConstantHeadingInterpolation(Math.toRadians(291))
+                .setConstantHeadingInterpolation(Math.toRadians(295))
                 .build();
 
         grabPickup4 = follower.pathBuilder()
-                .addPath(new BezierLine(scorePose2,  pickup3Pose))
+                .addPath(new BezierLine(scorePose3,  pickup3Pose))
                 .setConstantHeadingInterpolation(Math.toRadians(-180))
                 .addPath(new BezierLine(pickup3Pose,  pickup3grabPose))
                 .setConstantHeadingInterpolation(Math.toRadians(-180))
                 .addPath(new BezierLine(pickup3grabPose,  pickup3grabPose2))
                 .setConstantHeadingInterpolation(Math.toRadians(-160))
-                .addPath(new BezierLine(pickup3Pose,  pickup3grabPose))
+                /*.addPath(new BezierLine(pickup3Pose,  pickup3grabPose))
                 .setConstantHeadingInterpolation(Math.toRadians(-180))
-                /*.addPath(new BezierLine(pickup3grabPose,  pickup3grabPose2))
+                .addPath(new BezierLine(pickup3grabPose,  pickup3grabPose2))
                 .setConstantHeadingInterpolation(Math.toRadians(-160))*/
                 .build();
 
         scorePickup4 = follower.pathBuilder()
                 .addPath(new BezierLine(pickup3grabPose2,  scorePose3))
-                .setConstantHeadingInterpolation(Math.toRadians(291))
+                .setConstantHeadingInterpolation(Math.toRadians(295))
                 .build();
 
         grabPickup5 = follower.pathBuilder()
-                .addPath(new BezierLine(scorePose2,  pickup3Pose))
+                .addPath(new BezierLine(scorePose3,  pickup3Pose))
                 .setConstantHeadingInterpolation(Math.toRadians(-180))
                 .addPath(new BezierLine(pickup3Pose,  pickup3grabPose))
                 .setConstantHeadingInterpolation(Math.toRadians(-180))
-                //.addPath(new BezierLine(pickup3grabPose,  pickup3grabPose2))
-                //.setConstantHeadingInterpolation(Math.toRadians(-160))
+                .addPath(new BezierLine(pickup3grabPose,  pickup3grabPose2))
+                .setConstantHeadingInterpolation(Math.toRadians(-145))
                 .build();
 
         scorePickup5 = follower.pathBuilder()
-                .addPath(new BezierLine(pickup3grabPose2,  scorePose3))
-                .setConstantHeadingInterpolation(Math.toRadians(291))
+                .addPath(new BezierLine(pickup3grabPose,  scorePose3))
+                .setConstantHeadingInterpolation(Math.toRadians(295))
                 .build();
 
         landingPath = follower.pathBuilder()

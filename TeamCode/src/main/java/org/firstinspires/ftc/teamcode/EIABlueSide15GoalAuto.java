@@ -90,7 +90,7 @@ public class EIABlueSide15GoalAuto extends OpMode {
     private final Pose pickup3ControlPose = new Pose(72.26,53.67, Math.toRadians(-47));
     private final Pose pickup4Pose =new Pose(60.43, 73.67, Math.toRadians(-180)); // Grab Highest (First Set) of Artifacts from the Spike Mark.
     private final Pose pickup4grabPose = new Pose(35, 73.67, Math.toRadians(-180));
-    private final Pose pickup4scorePose = new Pose(65.8, 84.57, Math.toRadians(-45));
+    private final Pose pickup4scorePose = new Pose(56.8, 96.0, Math.toRadians(-45));
     private Path scorePreload;
     private PathChain grabPickup1, scorePickup1, grabPickup2, scorePickup2, grabPickup3, scorePickup3, grabPickup4, scorePickup4;
 
@@ -106,7 +106,7 @@ public class EIABlueSide15GoalAuto extends OpMode {
     private static final double HOOD_MIN_DEG = 0.0;
     private static final double HOOD_MAX_DEG = 40.0;
 
-    private double PRESET_HIGH_DEG = 36.5;
+    private double PRESET_HIGH_DEG = 35.5;
 
     // -------- Flywheel velocity control --------
     private static final double TICKS_PER_REV = 28.0;  // from your motor specs
@@ -164,13 +164,13 @@ public class EIABlueSide15GoalAuto extends OpMode {
         if(pathTimer.getElapsedTimeSeconds() > 2.60 && pathState==-2){
             setPathState(3);
         }
-        if(pathTimer.getElapsedTimeSeconds() > 4.10 && pathState==-4){
+        if(pathTimer.getElapsedTimeSeconds() > 4.30 && pathState==-4){
             setPathState(6);
         }
-        if(pathTimer.getElapsedTimeSeconds() > 4.10 && pathState==-7){
+        if(pathTimer.getElapsedTimeSeconds() > 4.30 && pathState==-7){
             setPathState(9);
         }
-        if(pathTimer.getElapsedTimeSeconds() > 1.90 && pathState==-10){
+        if(pathTimer.getElapsedTimeSeconds() > 1.85 && pathState==-10){
             setPathState(12);
         }
     }
@@ -198,23 +198,23 @@ public class EIABlueSide15GoalAuto extends OpMode {
             shootrollerServo.setPower(0.0);
         }
 
-        if(pathTimer.getElapsedTimeSeconds() > 1.35 && pathState ==-1) {
+        if(pathTimer.getElapsedTimeSeconds() > 1.25 && pathState ==-1) {
             setPathState(2);
             feedEnabled = false;
         }
-        if(pathTimer.getElapsedTimeSeconds() > 1.35 && pathState ==-3) {
+        if(pathTimer.getElapsedTimeSeconds() > 1.25 && pathState ==-3) {
             setPathState(5);
             feedEnabled = false;
         }
-        if(pathTimer.getElapsedTimeSeconds() > 1.35 && pathState ==-6) {
+        if(pathTimer.getElapsedTimeSeconds() > 1.25 && pathState ==-6) {
             setPathState(8);
             feedEnabled = false;
         }
-        if(pathTimer.getElapsedTimeSeconds() > 1.35 && pathState ==-9) {
+        if(pathTimer.getElapsedTimeSeconds() > 1.25 && pathState ==-9) {
             setPathState(11);
             feedEnabled = false;
         }
-        if(pathTimer.getElapsedTimeSeconds() > 1.35 && pathState ==-14) {
+        if(pathTimer.getElapsedTimeSeconds() > 1.25 && pathState ==-14) {
             setPathState(15);
             feedEnabled = false;
         }

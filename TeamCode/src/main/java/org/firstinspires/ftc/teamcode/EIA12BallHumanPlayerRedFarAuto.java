@@ -72,7 +72,7 @@ public class EIA12BallHumanPlayerRedFarAuto extends OpMode {
     private final Pose scorePose2 = new Pose(89, 17, Math.toRadians(245));
     private final Pose pickup3Pose = new Pose(100, 8,Math.toRadians(0));
     private final Pose pickup3grabPose = new Pose(123, 12,Math.toRadians(0));
-    private final Pose pickup3grabPose2 = new Pose(100, 10,Math.toRadians(0));
+    private final Pose pickup3grabPose2 = new Pose(113, 10,Math.toRadians(0));
     private final Pose scorePose3 = new Pose(89, 17, Math.toRadians(245));
     private final Pose leavePose = new Pose(100, 25,Math.toRadians(245));
     private Path scorePreload;
@@ -94,15 +94,15 @@ public class EIA12BallHumanPlayerRedFarAuto extends OpMode {
     private static final double HOOD_MIN_DEG = 0.0;
     private static final double HOOD_MAX_DEG = 40;
 
-    private double PRESET_HIGH_DEG = 40;//35;
+    private double PRESET_HIGH_DEG = 39;//35;
 
     // -------- Flywheel velocity control --------
     private static final double TICKS_PER_REV = 28.0;  // from your motor specs
     private static final double GEAR_RATIO    = 1.0;   // motor revs per flywheel rev
 
     // RPM targets
-    private static final double TARGET_RPM    =4050;//3950;//4500;//4500.0; // as requested
-    private static final double IDLE_RPM      = 4000;//3900;  // as requested
+    private static final double TARGET_RPM    =4100;//3950;//4500;//4500.0; // as requested
+    private static final double IDLE_RPM      = 4050;//3900;  // as requested
     double targetTPS = 0;
 
     // Feeding thresholds (hysteresis)
@@ -204,19 +204,19 @@ public class EIA12BallHumanPlayerRedFarAuto extends OpMode {
             setPathState(2);
             feedEnabled = false;
         }
-        if(pathTimer.getElapsedTimeSeconds() > 2.0 && pathState ==-3) {//3.25
+        if(pathTimer.getElapsedTimeSeconds() > 1.85 && pathState ==-3) {//3.25
             setPathState(5);
             feedEnabled = false;
         }
-        if(pathTimer.getElapsedTimeSeconds() > 2.0 && pathState ==-6) {//3.25
+        if(pathTimer.getElapsedTimeSeconds() > 1.85 && pathState ==-6) {//3.25
             setPathState(8);
             feedEnabled = false;
         }
-        if(pathTimer.getElapsedTimeSeconds() > 2.0 && pathState ==-9) {//3.25
+        if(pathTimer.getElapsedTimeSeconds() > 1.85 && pathState ==-9) {//3.25
             setPathState(11);
             feedEnabled = false;
         }
-        if(pathTimer.getElapsedTimeSeconds() > 2.0 && pathState ==-13) {
+        if(pathTimer.getElapsedTimeSeconds() > 1.85 && pathState ==-13) {
             setPathState(14);
             feedEnabled = false;
         }

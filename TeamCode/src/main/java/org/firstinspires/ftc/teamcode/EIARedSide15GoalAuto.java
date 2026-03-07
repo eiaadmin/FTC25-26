@@ -93,7 +93,7 @@ public class EIARedSide15GoalAuto extends OpMode {
     private final Pose pickup3ControlPose = new Pose(66, 65, Math.toRadians(-140));
     private final Pose pickup4Pose =new Pose(82.75,72, Math.toRadians(0)); // Grab Highest (First Set) of Artifacts from the Spike Mark.
     private final Pose pickup4grabPose = new Pose(110, 72, Math.toRadians(0));
-     private final Pose pickup4scorePose = new Pose(87.4, 90.0, Math.toRadians(-141)); // Landing Pose of our robot. It is facing the goal at a 135 degree angle.
+     private final Pose pickup4scorePose = new Pose(89.4, 96.0, Math.toRadians(-141)); // Landing Pose of our robot. It is facing the goal at a 135 degree angle.
     private Path scorePreload;
     private PathChain grabPickup1, scorePickup1, grabPickup2, scorePickup2, grabPickup3, scorePickup3, grabPickup4, scorePickup4;
 
@@ -109,7 +109,7 @@ public class EIARedSide15GoalAuto extends OpMode {
     private static final double HOOD_MIN_DEG = 0.0;
     private static final double HOOD_MAX_DEG = 40.0;//40.0;
 
-    private double PRESET_HIGH_DEG = 36.5;
+    private double PRESET_HIGH_DEG = 35.5;
 
     // -------- Flywheel velocity control --------
     private static final double TICKS_PER_REV = 28.0;  // from your motor specs
@@ -200,23 +200,23 @@ public class EIARedSide15GoalAuto extends OpMode {
             shootrollerServo.setPower(0.0);
         }
 
-        if(pathTimer.getElapsedTimeSeconds() > 1.35 && pathState ==-1) {
+        if(pathTimer.getElapsedTimeSeconds() > 1.25 && pathState ==-1) {
             setPathState(2);
             feedEnabled = false;
         }
-        if(pathTimer.getElapsedTimeSeconds() > 1.35 && pathState ==-3) {
+        if(pathTimer.getElapsedTimeSeconds() > 1.25 && pathState ==-3) {
             setPathState(5);
             feedEnabled = false;
         }
-        if(pathTimer.getElapsedTimeSeconds() > 1.35 && pathState ==-6) {
+        if(pathTimer.getElapsedTimeSeconds() > 1.25 && pathState ==-6) {
             setPathState(8);
             feedEnabled = false;
         }
-        if(pathTimer.getElapsedTimeSeconds() > 1.30 && pathState ==-9) {
+        if(pathTimer.getElapsedTimeSeconds() > 1.25 && pathState ==-9) {
             setPathState(11);
             feedEnabled = false;
         }
-        if(pathTimer.getElapsedTimeSeconds() > 1.30 && pathState ==-14) {
+        if(pathTimer.getElapsedTimeSeconds() > 1.25 && pathState ==-14) {
             setPathState(15);
             feedEnabled = false;
         }
@@ -231,9 +231,10 @@ public class EIARedSide15GoalAuto extends OpMode {
         /* This is our grabPickup1 PathChain. We are using a single path with a BezierLine, which is a straight line. */
         grabPickup1 = follower.pathBuilder()
                 .addPath(new BezierLine(scorePose,  pickup1Pose))
-                .setLinearHeadingInterpolation(scorePose.getHeading(), pickup1Pose.getHeading())
+                .setConstantHeadingInterpolation(Math.toRadians(0))
                 .addPath(new BezierLine(pickup1Pose,  pickup1grabPose))
-                .setLinearHeadingInterpolation(pickup1Pose.getHeading(), pickup1grabPose.getHeading())
+                .setConstantHeadingInterpolation(Math.toRadians(0))
+                //.setLinearHeadingInterpolation(pickup1Pose.getHeading(), pickup1grabPose.getHeading())
                 .build();
 
         scorePickup1 = follower.pathBuilder()
@@ -248,9 +249,9 @@ public class EIARedSide15GoalAuto extends OpMode {
         /* This is our grabPickup2 PathChain. We are using a single path with a BezierLine, which is a straight line. */
         grabPickup2 = follower.pathBuilder()
                 .addPath(new BezierLine(pickup1scorePose,  releasegatePose))
-                .setLinearHeadingInterpolation(pickup1scorePose.getHeading(), releasegatePose.getHeading())
+                .setConstantHeadingInterpolation(Math.toRadians(0))
                 .addPath(new BezierLine(releasegatePose,  releasegateEnablePose))
-                .setLinearHeadingInterpolation(releasegatePose.getHeading(), releasegateEnablePose.getHeading())
+                .setConstantHeadingInterpolation(Math.toRadians(0))
                 .addPath(new BezierLine(releasegateEnablePose,  pickup2Pose))
                 .setLinearHeadingInterpolation(releasegateEnablePose.getHeading(), pickup2Pose.getHeading())
                 .build();
@@ -263,9 +264,9 @@ public class EIARedSide15GoalAuto extends OpMode {
         /* This is our grabPickup2 PathChain. We are using a single path with a BezierLine, which is a straight line. */
         grabPickup3 = follower.pathBuilder()
                 .addPath(new BezierLine(pickup2scorePose,  releasegatetwicePose))
-                .setLinearHeadingInterpolation(pickup2scorePose.getHeading(), releasegatetwicePose.getHeading())
+                .setConstantHeadingInterpolation(Math.toRadians(0))
                 .addPath(new BezierLine(releasegatetwicePose,  releasegatetwiceEnablePose))
-                .setLinearHeadingInterpolation(releasegatetwicePose.getHeading(), releasegatetwiceEnablePose.getHeading())
+                .setConstantHeadingInterpolation(Math.toRadians(0))
                 .addPath(new BezierLine(releasegatetwiceEnablePose,  pickup3Pose))
                 .setLinearHeadingInterpolation(releasegatetwiceEnablePose.getHeading(), pickup3Pose.getHeading())
                 .build();
