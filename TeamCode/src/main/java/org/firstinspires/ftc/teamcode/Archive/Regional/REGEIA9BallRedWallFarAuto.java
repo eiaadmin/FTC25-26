@@ -36,6 +36,7 @@ import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -55,9 +56,9 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
  * to the launch area and shoots it.
  */
 
-@Autonomous(name = "EIA9BallRedWallFarAuto", group = "Decode2526")
-
-public class EIA9BallRedWallFarAuto extends OpMode {
+@Autonomous(name = "REGEIA9BallRedWallFarAuto", group = "Decode2526")
+@Disabled
+public class REGEIA9BallRedWallFarAuto extends OpMode {
 
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;

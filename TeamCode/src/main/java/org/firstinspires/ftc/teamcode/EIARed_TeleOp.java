@@ -99,7 +99,7 @@ public class EIARed_TeleOp extends LinearOpMode {
 
     // ---- Animations ----
     private final PrismAnimations.Solid solidGreen = new PrismAnimations.Solid(Color.GREEN);
-    private final PrismAnimations.Solid solidBlue  = new PrismAnimations.Solid(Color.BLUE);
+    private final PrismAnimations.Solid solidBlue  = new PrismAnimations.Solid(Color.RED);
 
     private static final double PROX_THRESHOLD_MM = 45.0;//65.0;
 
@@ -237,7 +237,7 @@ public class EIARed_TeleOp extends LinearOpMode {
                 //if from close on blue it goes to the left of the goal (towards the trashcans) increase -1.2 try -1
                 //if from close on blue it goes to the right of the goal (towards the table) decrease -1.2 try -1.5
                 if ( ll.getTy() <= -16.85 ) {
-                    tx = ll.getTx() + 1.8;
+                    tx = ll.getTx() + 1;
                 }
                 if ( ll.getTy() > -16.85 ){
                     tx = ll.getTx() - 4;
@@ -260,9 +260,9 @@ public class EIARed_TeleOp extends LinearOpMode {
                     double rpm2 = (Math.abs(flywheelMotor2.getVelocity()) / (TICKS_PER_REV * GEAR_RATIO)) * 60.0;
                     double actualRPM_local = (rpm1 + rpm2) / 2.0;
 
-                    telemetry.addData("Flywheel Motor Velocity: ",curTPS_signed_local);
+                    /*telemetry.addData("Flywheel Motor Velocity: ",curTPS_signed_local);
                     telemetry.addData("curTPS_abs_local: ",curTPS_abs_local);
-                    telemetry.addData("actualRPM_local: ",actualRPM_local);
+                    telemetry.addData("actualRPM_local: ",actualRPM_local);*/
 
                     // low-pass filter RPM to avoid jitter
                     if (filteredRPM <= 1.0) filteredRPM = actualRPM_local; // init
@@ -422,7 +422,7 @@ public class EIARed_TeleOp extends LinearOpMode {
                 firstUpdate = false;
             }
 
-            telemetry.addData("DPAD_UP open-loop", dpadUpOpenLoop4500);
+            /*telemetry.addData("DPAD_UP open-loop", dpadUpOpenLoop4500);
             telemetry.addData("tx", tx);
             telemetry.addData("ty", ty);
             telemetry.addData("tagSeen", tagSeen);
@@ -431,10 +431,10 @@ public class EIARed_TeleOp extends LinearOpMode {
             telemetry.addData("hoodCompDeg", "%.2f", hoodCompDegTelemetry);
             telemetry.addData("hoodFinalDeg", "%.2f", hoodFinalDegTelemetry);
 
-            telemetry.addData("targetRPM", "%.0f", autoRPM);
+            telemetry.addData("targetRPM", "%.0f", autoRPM);*/
             double rpm1 = (Math.abs(flywheelMotor.getVelocity()) / (TICKS_PER_REV * GEAR_RATIO)) * 60.0;
             double rpm2 = (Math.abs(flywheelMotor2.getVelocity()) / (TICKS_PER_REV * GEAR_RATIO)) * 60.0;
-            telemetry.addData("RPM1", "%.0f", rpm1);
+            /*telemetry.addData("RPM1", "%.0f", rpm1);
             telemetry.addData("RPM2", "%.0f", rpm2);
             telemetry.addData("Mismatch", "%.0f", (rpm1 - rpm2));
             telemetry.addData("filtRPM", "%.0f", filteredRPM);
@@ -443,7 +443,7 @@ public class EIARed_TeleOp extends LinearOpMode {
             telemetry.addData("targetTPS", "%.0f", targetTPS);
             telemetry.addData("turnCmd", turnCmd);
             telemetry.addData("aligned", Math.abs(tx) <= AIM_TOL_DEG);
-            telemetry.update();
+            telemetry.update();*/
         }
     }
 
@@ -452,9 +452,9 @@ public class EIARed_TeleOp extends LinearOpMode {
         // MUST be strictly increasing X (Ty) values!
 
         // Ty -> RPM (ascending Ty)
-        tyToRPM.add(-100, 3950);//3950
-        tyToRPM.add(-20, 3950);//3950
-        tyToRPM.add(-16.85, 3950);//3950
+        tyToRPM.add(-100, 3900);//3950
+        tyToRPM.add(-20, 3900);//3950
+        tyToRPM.add(-16.85, 3900);//3950
         tyToRPM.add(-16.84, 3300);
         tyToRPM.add(-15.49, 3300);
         tyToRPM.add(-15.22, 3300);

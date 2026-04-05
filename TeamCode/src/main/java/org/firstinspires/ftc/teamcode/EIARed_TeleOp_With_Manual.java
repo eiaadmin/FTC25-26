@@ -96,7 +96,7 @@ public class EIARed_TeleOp_With_Manual extends LinearOpMode {
 
     // ---- Animations ----
     private final PrismAnimations.Solid solidGreen = new PrismAnimations.Solid(Color.GREEN);
-    private final PrismAnimations.Solid solidBlue  = new PrismAnimations.Solid(Color.BLUE);
+    private final PrismAnimations.Solid solidBlue  = new PrismAnimations.Solid(Color.RED);
 
     private static final double PROX_THRESHOLD_MM = 45.0;//65.0;
 

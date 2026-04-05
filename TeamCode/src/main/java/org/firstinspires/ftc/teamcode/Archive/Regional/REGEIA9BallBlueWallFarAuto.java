@@ -31,12 +31,12 @@ package org.firstinspires.ftc.teamcode; // make sure this aligns with class loca
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
-import com.pedropathing.geometry.BezierPoint;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -56,27 +56,34 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
  * to the launch area and shoots it.
  */
 
-@Autonomous(name = "EIA12BallHumanPlayerBlueFarAuto", group = "Decode2526")
-
-public class EIA12BallHumanPlayerBlueFarAuto extends OpMode {
+@Autonomous(name = "REGEIA9BallBlueWallFarAuto", group = "Decode2526")
+@Disabled
+public class REGEIA9BallBlueWallFarAuto extends OpMode {
 
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
     private final ElapsedTime runtime = new ElapsedTime();
     private int pathState;
     private final Pose startPose = new Pose(65, 7.625,Math.toRadians(270)); // Start Pose of our robot.
-    private final Pose scorePose = new Pose(55, 19, Math.toRadians(295));
-    private final Pose pickup2Pose = new Pose(33.05, 4.84,Math.toRadians(-180));
-    private final Pose pickup2grabPose = new Pose(18, 10,Math.toRadians(-180));
-    private final Pose pickup2grabPose4 = new Pose(30, 10,Math.toRadians(-180));
-    private final Pose scorePose2 = new Pose(55, 19, Math.toRadians(295));
-    private final Pose pickup3Pose = new Pose(30, 4.84,Math.toRadians(-180));
-    private final Pose pickup3grabPose = new Pose(20, 10,Math.toRadians(-180));
-    private final Pose pickup3grabPose2 = new Pose(30, 10,Math.toRadians(-180));
-    private final Pose scorePose3 = new Pose(55, 18, Math.toRadians(295));
+    private final Pose scorePose = new Pose(55, 19, Math.toRadians(291));
+    private final Pose pickup1Pose = new Pose(57.15, 27.5,Math.toRadians(-180));
+    private final Pose pickup1grabPose = new Pose(21, 27.5,Math.toRadians(-180));
+    private final Pose pickup1scorePose = new Pose(55, 19, Math.toRadians(291));
+    private final Pose pickup2Pose = new Pose(36.05, 18.84,Math.toRadians(-180));
+    private final Pose pickup2grabPose = new Pose(21, 2,Math.toRadians(-180));
+    private final Pose pickup2Pose2 = new Pose(35, 5,Math.toRadians(-180));
+    private final Pose pickup2grabPose2 = new Pose(21, 1,Math.toRadians(-180));
+    private final Pose pickup2Pose3 = new Pose(35, 4,Math.toRadians(-180));
+    private final Pose pickup2grabPose3 = new Pose(21, -5,Math.toRadians(-180));
+    private final Pose pickup2grabPose4 = new Pose(30, 15,Math.toRadians(-180));
+    private final Pose scorePose2 = new Pose(55, 19, Math.toRadians(291));
+    private final Pose pickup3Pose = new Pose(25, 15,Math.toRadians(-180));
+    private final Pose pickup3grabPose = new Pose(25, 10,Math.toRadians(-180));
+    private final Pose scorePose3 = new Pose(55, 19, Math.toRadians(291));
     private final Pose leavePose = new Pose(65, 30,Math.toRadians(-180));
     private Path scorePreload;
-    private PathChain grabPickup5, scorePickup5,grabPickup4, scorePickup4, grabPickup2, grabPickup21,scorePickup2,landingPath,grabPickup3, scorePickup3;;//, grabPickup3, scorePickup3, landingPath;
+    private PathChain grabPickup1, scorePickup1, grabPickup2, scorePickup2,landingPath,grabPickup3, scorePickup3;;//, grabPickup3, scorePickup3, landingPath;
+
 
     // -------- Mechanisms --------
     private DcMotorEx flywheelMotor;      // velocity control
@@ -93,15 +100,15 @@ public class EIA12BallHumanPlayerBlueFarAuto extends OpMode {
     private static final double HOOD_MIN_DEG = 0.0;
     private static final double HOOD_MAX_DEG = 40;
 
-    private double PRESET_HIGH_DEG = 39;
+    private double PRESET_HIGH_DEG = 38;
 
     // -------- Flywheel velocity control --------
     private static final double TICKS_PER_REV = 28.0;  // from your motor specs
     private static final double GEAR_RATIO    = 1.0;   // motor revs per flywheel rev
 
     // RPM targets
-    private static final double TARGET_RPM    = 4100;//3950;//4500;//4500.0; // as requested
-    private static final double IDLE_RPM       = 4050;//3900;
+    private static final double TARGET_RPM    = 3950;//4500;//4500.0; // as requested
+    private static final double IDLE_RPM       = 3900;
     double targetTPS = 0;
 
     // Feeding thresholds (hysteresis)
@@ -139,27 +146,23 @@ public class EIA12BallHumanPlayerBlueFarAuto extends OpMode {
 
         targetTPS = rpmToTicksPerSec(IDLE_RPM);
         flywheelMotor.setVelocity(targetTPS);
-        flywheelMotor1.setVelocity(targetTPS);
 
         double approxPower = Range.clip(targetTPS / rpmToTicksPerSec(TARGET_RPM), 0.0, 1.0);
-        //flywheelMotor1.setPower(approxPower);
+        flywheelMotor1.setPower(approxPower);
         rollerIntakeMotor.setPower(INTAKE_POWER);
         rollerIntakeMotor2.setPower(INTAKE_POWER);
         shootrollerServo.setPower(FEED_REVERSE);
-        hardstopServo.setPosition(0.40);
+        hardstopServo.setPosition(0.55);
 
-        if(pathTimer.getElapsedTimeSeconds() > 2.15 && pathState==-2){
+        if(pathTimer.getElapsedTimeSeconds() > 3.15 && pathState==-2){
             setPathState(3);
         }
-        if(pathTimer.getElapsedTimeSeconds() > 2.30 && pathState==-4){
+        if(pathTimer.getElapsedTimeSeconds() > 3.15 && pathState==-4){
             setPathState(6);
         }
-        if(pathTimer.getElapsedTimeSeconds() > 2.30 && pathState==-8){
+       /* if(pathTimer.getElapsedTimeSeconds() > 2.65 && pathState==-8){
             setPathState(9);
-        }
-        if(pathTimer.getElapsedTimeSeconds() > 2.30 && pathState==-10){
-            setPathState(12);
-        }
+        }*/
 
     }
     public void enableShooter() {
@@ -184,10 +187,9 @@ public class EIA12BallHumanPlayerBlueFarAuto extends OpMode {
             feedEnabled = false;    // dip detected -> pause feeding until back up to RESUME_TPS
             targetTPS = rpmToTicksPerSec(IDLE_RPM);
             flywheelMotor.setVelocity(targetTPS);
-            flywheelMotor1.setVelocity(targetTPS);
 
             double approxPower = Range.clip(targetTPS / rpmToTicksPerSec(TARGET_RPM), 0.0, 1.0);
-            //flywheelMotor1.setPower(approxPower);
+            flywheelMotor1.setPower(approxPower);
         }
         if (feedEnabled) {
             rollerIntakeMotor.setPower(INTAKE_POWER);
@@ -198,26 +200,22 @@ public class EIA12BallHumanPlayerBlueFarAuto extends OpMode {
             rollerIntakeMotor2.setPower(0);
             shootrollerServo.setPower(0.0);
         }
-        if(pathTimer.getElapsedTimeSeconds() > 4 && pathState ==-1) {//4.25
+        if(pathTimer.getElapsedTimeSeconds() > 4.25 && pathState ==-1) {
             setPathState(2);
             feedEnabled = false;
         }
-        if(pathTimer.getElapsedTimeSeconds() > 1.80 && pathState ==-3) {//3.25
+        if(pathTimer.getElapsedTimeSeconds() > 3.25 && pathState ==-3) {
             setPathState(5);
             feedEnabled = false;
         }
-        if(pathTimer.getElapsedTimeSeconds() > 1.80 && pathState ==-6) {//2.45
+        if(pathTimer.getElapsedTimeSeconds() > 3.25 && pathState ==-6) {
             setPathState(8);
             feedEnabled = false;
         }
-        if(pathTimer.getElapsedTimeSeconds() > 1.80 && pathState ==-9) {//2.45
+        /*if(pathTimer.getElapsedTimeSeconds() > 1.5 && pathState ==-9) {
             setPathState(11);
             feedEnabled = false;
-        }
-        if(pathTimer.getElapsedTimeSeconds() > 1.80 && pathState ==-13) {
-            setPathState(14);
-            feedEnabled = false;
-        }
+        }*/
 
         telemetry.addData("feedEnabled ", feedEnabled);
         telemetry.addData("Enable Shooter Elapsed Time: ", pathTimer.getElapsedTimeSeconds());
@@ -228,71 +226,53 @@ public class EIA12BallHumanPlayerBlueFarAuto extends OpMode {
         scorePreload = new Path(new BezierLine(startPose, scorePose));
         scorePreload.setLinearHeadingInterpolation(startPose.getHeading(), scorePose.getHeading());
 
+        grabPickup1 = follower.pathBuilder()
+                .addPath(new BezierLine(scorePose,  pickup1Pose))
+                .setConstantHeadingInterpolation(Math.toRadians(-180))
+                .addPath(new BezierLine(pickup1Pose,  pickup1grabPose))
+                .setConstantHeadingInterpolation(Math.toRadians(-180))
+                .build();
+
+        scorePickup1 = follower.pathBuilder()
+                .addPath(new BezierLine(pickup1Pose,  pickup1scorePose))
+                .setConstantHeadingInterpolation(Math.toRadians(291))
+                .build();
+
         grabPickup2 = follower.pathBuilder()
-                .addPath(new BezierLine(scorePose,  pickup2Pose))
+                .addPath(new BezierLine(pickup1scorePose,  pickup2Pose))
                 .setConstantHeadingInterpolation(Math.toRadians(-180))
                 .addPath(new BezierLine(pickup2Pose,  pickup2grabPose))
                 .setConstantHeadingInterpolation(Math.toRadians(-180))
-                /*.addPath(new BezierPoint(pickup2grabPose))
-                .setConstantHeadingInterpolation(Math.toRadians(-160))
-                .addPath(new BezierPoint(pickup2grabPose4))
-                .setConstantHeadingInterpolation(Math.toRadians(160))*/
+                .addPath(new BezierLine(pickup2grabPose,  pickup2Pose2))
+                .setConstantHeadingInterpolation(Math.toRadians(-180))
+                .addPath(new BezierLine(pickup2Pose2,  pickup2grabPose2))
+                .setConstantHeadingInterpolation(Math.toRadians(-180))
+                .addPath(new BezierLine(pickup2grabPose2,  pickup2Pose3))
+                .setConstantHeadingInterpolation(Math.toRadians(-180))
+                .addPath(new BezierLine(pickup2Pose3,  pickup2grabPose3))
+                .setConstantHeadingInterpolation(Math.toRadians(-180))
+                .addPath(new BezierLine(pickup2Pose3,  pickup2grabPose3))
+                .setConstantHeadingInterpolation(Math.toRadians(-180))
+                .addPath(new BezierLine(pickup2grabPose3,  pickup2grabPose4))
+                .setConstantHeadingInterpolation(Math.toRadians(-180))
                 .build();
 
         scorePickup2 = follower.pathBuilder()
                 .addPath(new BezierLine(pickup2grabPose4,  scorePose2))
-                .setConstantHeadingInterpolation(Math.toRadians(295))
+                .setConstantHeadingInterpolation(Math.toRadians(291))
                 .build();
 
-        grabPickup3 = follower.pathBuilder()
+        /*grabPickup3 = follower.pathBuilder()
                 .addPath(new BezierLine(scorePose2,  pickup3Pose))
                 .setConstantHeadingInterpolation(Math.toRadians(-180))
                 .addPath(new BezierLine(pickup3Pose,  pickup3grabPose))
                 .setConstantHeadingInterpolation(Math.toRadians(-180))
-                .addPath(new BezierLine(pickup3grabPose,  pickup3grabPose2))
-                .setConstantHeadingInterpolation(Math.toRadians(-145))
-                /*.addPath(new BezierLine(pickup3Pose,  pickup3grabPose))
-                .setConstantHeadingInterpolation(Math.toRadians(-180))
-                .addPath(new BezierLine(pickup3grabPose,  pickup3grabPose2))
-                .setConstantHeadingInterpolation(Math.toRadians(-160))*/
                 .build();
 
         scorePickup3 = follower.pathBuilder()
-                .addPath(new BezierLine(pickup3grabPose2,  scorePose3))
-                .setConstantHeadingInterpolation(Math.toRadians(295))
-                .build();
-
-        grabPickup4 = follower.pathBuilder()
-                .addPath(new BezierLine(scorePose3,  pickup3Pose))
-                .setConstantHeadingInterpolation(Math.toRadians(-180))
-                .addPath(new BezierLine(pickup3Pose,  pickup3grabPose))
-                .setConstantHeadingInterpolation(Math.toRadians(-180))
-                .addPath(new BezierLine(pickup3grabPose,  pickup3grabPose2))
-                .setConstantHeadingInterpolation(Math.toRadians(-160))
-                /*.addPath(new BezierLine(pickup3Pose,  pickup3grabPose))
-                .setConstantHeadingInterpolation(Math.toRadians(-180))
-                .addPath(new BezierLine(pickup3grabPose,  pickup3grabPose2))
-                .setConstantHeadingInterpolation(Math.toRadians(-160))*/
-                .build();
-
-        scorePickup4 = follower.pathBuilder()
-                .addPath(new BezierLine(pickup3grabPose2,  scorePose3))
-                .setConstantHeadingInterpolation(Math.toRadians(295))
-                .build();
-
-        grabPickup5 = follower.pathBuilder()
-                .addPath(new BezierLine(scorePose3,  pickup3Pose))
-                .setConstantHeadingInterpolation(Math.toRadians(-180))
-                .addPath(new BezierLine(pickup3Pose,  pickup3grabPose))
-                .setConstantHeadingInterpolation(Math.toRadians(-180))
-                .addPath(new BezierLine(pickup3grabPose,  pickup3grabPose2))
-                .setConstantHeadingInterpolation(Math.toRadians(-145))
-                .build();
-
-        scorePickup5 = follower.pathBuilder()
                 .addPath(new BezierLine(pickup3grabPose,  scorePose3))
-                .setConstantHeadingInterpolation(Math.toRadians(295))
-                .build();
+                .setConstantHeadingInterpolation(Math.toRadians(291))
+                .build();*/
 
         landingPath = follower.pathBuilder()
                 .addPath(new BezierLine(scorePose3,  leavePose))
@@ -306,8 +286,7 @@ public class EIA12BallHumanPlayerBlueFarAuto extends OpMode {
             case 0:
                 follower.followPath(scorePreload);
                 follower.setMaxPower(1.0);
-                flywheelMotor.setVelocity(targetTPS);
-                flywheelMotor1.setVelocity(targetTPS);
+                flywheelMotor.setVelocity(TARGET_TPS);
                 setPathState(1);
                 break;
             case 1:
@@ -315,16 +294,15 @@ public class EIA12BallHumanPlayerBlueFarAuto extends OpMode {
                 setPathState(-1);
                 break;
             case 2:
-                follower.followPath(grabPickup2,true);
-                follower.setMaxPower(1.0);
+                follower.followPath(grabPickup1,true);
+                follower.setMaxPower(0.85);
                 intakeArtifacts();
                 setPathState(-2);
                 break;
             case 3:
-                follower.followPath(scorePickup2, true);
+                //rollerIntakeMotor.setPower(INTAKE_POWER_PPG);
+                follower.followPath(scorePickup1, true);
                 follower.setMaxPower(1.0);
-                flywheelMotor.setVelocity(targetTPS);
-                flywheelMotor1.setVelocity(targetTPS);
                 setPathState(4);
                 break;
             case 4:
@@ -332,16 +310,14 @@ public class EIA12BallHumanPlayerBlueFarAuto extends OpMode {
                 setPathState(-3);
                 break;
             case 5:
-                follower.followPath(grabPickup3,true);
-                follower.setMaxPower(0.75);
+                follower.followPath(grabPickup2,true);
+                follower.setMaxPower(0.65);
                 intakeArtifacts();
                 setPathState(-4);
                 break;
             case 6:
-                follower.followPath(scorePickup3, true);
+                follower.followPath(scorePickup2, true);
                 follower.setMaxPower(1.0);
-                flywheelMotor.setVelocity(targetTPS);
-                flywheelMotor1.setVelocity(targetTPS);
                 setPathState(7);
                 break;
             case 7:
@@ -349,13 +325,13 @@ public class EIA12BallHumanPlayerBlueFarAuto extends OpMode {
                 setPathState(-6);
                 break;
             case 8:
-                follower.followPath(grabPickup4,true);
+                /*follower.followPath(grabPickup3,true);
                 follower.setMaxPower(0.75);
                 intakeArtifacts();
                 setPathState(-8);
                 break;
             case 9:
-                follower.followPath(scorePickup4, true);
+                follower.followPath(scorePickup3, true);
                 follower.setMaxPower(1.0);
                 setPathState(10);
                 break;
@@ -363,28 +339,13 @@ public class EIA12BallHumanPlayerBlueFarAuto extends OpMode {
                 enableShooter();
                 setPathState(-9);
                 break;
-            case 11:
-                follower.followPath(grabPickup5,true);
-                follower.setMaxPower(0.75);
-                intakeArtifacts();
-                setPathState(-10);
-                break;
-            case 12:
-                follower.followPath(scorePickup5, true);
-                follower.setMaxPower(1.0);
-                setPathState(13);
-                break;
-            case 13:
-                enableShooter();
-                setPathState(-13);
-                break;
-            case 14:
+            case 11:*/
                 flywheelMotor.setVelocity(0.0);
                 flywheelMotor1.setVelocity(0.0);
                 shootrollerServo.setPower(FEED_REVERSE);
                 follower.followPath(landingPath, true);
                 follower.setMaxPower(1.0);
-                setPathState(-14);
+                setPathState(-11);
                 break;
         }
     }
@@ -405,19 +366,17 @@ public class EIA12BallHumanPlayerBlueFarAuto extends OpMode {
             double kF = 19;
             PIDFCoefficients flywhlpidf = new PIDFCoefficients(FW_kP,FW_kI,FW_kD,kF);
             flywheelMotor.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER,flywhlpidf);
-            flywheelMotor1.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER,flywhlpidf);
             lastAppliedTPS=TARGET_TPS;
         }
         targetTPS = rpmToTicksPerSec(TARGET_RPM);
         flywheelMotor.setVelocity(targetTPS);
-        flywheelMotor1.setVelocity(targetTPS);
 
         double approxPower = Range.clip(targetTPS / rpmToTicksPerSec(TARGET_RPM), 0.0, 1.0);
-        //flywheelMotor1.setPower(approxPower);
+        flywheelMotor1.setPower(approxPower);
 
-        if (pathState == -1 || pathState == -3 || pathState == -6 || pathState == -9|| pathState == -13) {
+        if (pathState == -1 || pathState == -3 || pathState == -6 || pathState == -9) {
             enableShooter();
-        }else if (pathState == -2 || pathState == -4 || pathState == -8 || pathState == -10){
+        }else if (pathState == -2 || pathState == -4 || pathState == -8 ){
             intakeArtifacts();
         }else {
             autonomousPathUpdate();
@@ -451,14 +410,14 @@ public class EIA12BallHumanPlayerBlueFarAuto extends OpMode {
         rollerIntakeMotor2 = hardwareMap.dcMotor.get("Rollerintakeexp2");
 
         flywheelMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        flywheelMotor1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        flywheelMotor1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         flywheelMotor.setDirection(DcMotor.Direction.REVERSE);
         flywheelMotor1.setDirection(DcMotor.Direction.REVERSE);
         rollerIntakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         rollerIntakeMotor2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         rollerIntakeMotor2.setDirection(DcMotorSimple.Direction.REVERSE);
         hardstopServo    = hardwareMap.servo.get("hardstopServo");
-        hardstopServo.setPosition(0.40);
+        hardstopServo.setPosition(0.55);
 
         buildPaths();
         follower.setStartingPose(startPose);
@@ -477,10 +436,9 @@ public class EIA12BallHumanPlayerBlueFarAuto extends OpMode {
         setPathState(0);
         targetTPS = rpmToTicksPerSec(TARGET_RPM);
         flywheelMotor.setVelocity(targetTPS);
-        flywheelMotor1.setVelocity(targetTPS);
 
         double approxPower = Range.clip(targetTPS / rpmToTicksPerSec(TARGET_RPM), 0.0, 1.0);
-        //flywheelMotor1.setPower(approxPower);
+        flywheelMotor1.setPower(approxPower);
     }
 
     /** We do not use this because everything should automatically disable **/
